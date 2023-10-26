@@ -12,6 +12,7 @@ type ParamCreateAccount struct {
 	EmailVerified bool
 	Password      string
 	Status        string
+	Role          string
 }
 
 type ResultFetchOneAccount struct {
@@ -26,6 +27,7 @@ type ParamUpdateAccount struct {
 	Password      string
 	Status        string
 	Image         bool
+	Role          string
 }
 
 type ResultUpdateAccountByUUID struct {

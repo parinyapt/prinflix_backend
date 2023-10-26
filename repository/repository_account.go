@@ -14,7 +14,8 @@ func (receiver RepositoryReceiverArgument) CreateAccount(param modelRepository.P
 		Email:         param.Email,
 		EmailVerified: param.EmailVerified,
 		Password:      param.Password,
-		Status:        "active",
+		Status:        param.Status,
+		Role:          param.Role,
 	})
 	if resultDB.Error != nil {
 		return errors.Wrap(resultDB.Error, "[Repository][CreateAccount()]->"+errorDatabaseQueryFailed)
@@ -59,6 +60,7 @@ func (receiver RepositoryReceiverArgument) UpdateAccountByUUID(uuid uuid.UUID, p
 		Password:      param.Password,
 		Status:        param.Status,
 		Image:         param.Image,
+		Role:          param.Role,
 	})
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][UpdateAccountByUUID()]->"+errorDatabaseQueryFailed)
