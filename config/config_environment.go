@@ -20,27 +20,12 @@ type envSpecification struct {
 	AppName    string `required:"true" split_words:"true"`
 	AppBaseUrl string `required:"true" split_words:"true"`
 
-	DatabaseTablePrefix        string `required:"true" split_words:"true"`
-	DatabasePostgresqlHost     string `required:"true" split_words:"true"`
-	DatabasePostgresqlPort     int    `required:"true" split_words:"true"`
-	DatabasePostgresqlUsername string `required:"true" split_words:"true"`
-	DatabasePostgresqlPassword string `required:"true" split_words:"true"`
-	DatabasePostgresqlDbname   string `required:"true" split_words:"true"`
-
-	Oauth2GoogleRedirectUrl   string `required:"true" split_words:"true"`
-	Oauth2FacebookRedirectUrl string `required:"true" split_words:"true"`
-	Oauth2AppleRedirectUrl    string `required:"true" split_words:"true"`
-
-	ObjectStorageEndpoint        string `required:"true" split_words:"true"`
-	ObjectStorageAccessKey       string `required:"true" split_words:"true"`
-	ObjectStorageSecretAccessKey string `required:"true" split_words:"true"`
-	ObjectStorageBucketName      string `required:"true" split_words:"true"`
-
-	JwtSignKeyAccessToken  string `required:"true" split_words:"true"`
-	JwtSignKeyRefreshToken string `required:"true" split_words:"true"`
-
-	EncryptionKeyAuthTempCode string `required:"true" split_words:"true"`
-	EncryptionKeyStorage      string `required:"true" split_words:"true"`
+	DatabaseTablePrefix     string `required:"true" split_words:"true"`
+	DatabaseMariadbHost     string `required:"true" split_words:"true"`
+	DatabaseMariadbPort     string `split_words:"true"`
+	DatabaseMariadbUsername string `required:"true" split_words:"true"`
+	DatabaseMariadbPassword string `required:"true" split_words:"true"`
+	DatabaseMariadbDbname   string `required:"true" split_words:"true"`
 }
 
 func initializeEnvironmentVariableCheck() {
