@@ -1,6 +1,10 @@
 package modelController
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type ParamCheckLogin struct {
 	Email    string
@@ -10,5 +14,19 @@ type ParamCheckLogin struct {
 type ReturnCheckLogin struct {
 	IsNotFound         bool
 	IsPasswordNotMatch bool
-	UUID               uuid.UUID
+	AccountUUID        uuid.UUID
+}
+
+type ParamGenerateAccessToken struct {
+	SessionUUID string
+	ExpiredAt   time.Time
+}
+
+type ClaimAuthToken struct {
+	SessionID string
+}
+
+type ReturnGenerateAccessToken struct {
+	TokenType   string
+	AccessToken string
 }

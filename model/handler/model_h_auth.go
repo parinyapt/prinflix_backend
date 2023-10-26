@@ -1,5 +1,7 @@
 package modelHandler
 
+import "time"
+
 type RequestLogin struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
@@ -12,7 +14,7 @@ type RequestRegister struct {
 }
 
 type ResponseAccessToken struct {
-	TokenType            string `json:"token_type"`
-	AccessToken          string `json:"access_token"`
-	AccessTokenExpireIn  int    `json:"access_token_expire_in"`
+	TokenType           string        `json:"token_type"`
+	AccessToken         string        `json:"access_token"`
+	AccessTokenExpireIn time.Duration `json:"expire_in"`
 }
