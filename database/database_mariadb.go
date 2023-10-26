@@ -38,6 +38,7 @@ func initializeConnectMariaDB() {
 	// AutoMigrate database
 	err = database.AutoMigrate(
 		modelDatabase.Account{},
+		modelDatabase.AuthSession{},
 	)
 	if err != nil {
 		logger.Fatal("Failed to AutoMigrate database", logger.Field("error", err))
