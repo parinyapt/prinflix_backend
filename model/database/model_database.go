@@ -16,6 +16,7 @@ type Account struct {
 	Password      string    `gorm:"column:account_password;not null"`
 	Status        string    `gorm:"column:account_status;type:enum('active', 'inactive');default:active;not null"`
 	Image         bool      `gorm:"column:account_image;default:false;not null"`
+	Role          string    `gorm:"column:account_role;type:enum('admin', 'user');default:user;not null"`
 	CreatedAt     time.Time `gorm:"column:account_created_at;not null"`
 	UpdatedAt     time.Time `gorm:"column:account_updated_at;not null"`
 }
