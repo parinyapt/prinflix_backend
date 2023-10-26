@@ -37,6 +37,7 @@ func (receiver ControllerReceiverArgument) CreateAccount(param modelController.P
 		EmailVerified: false,
 		Password:      passwordHash,
 		Status:        "active",
+		Role:          "user",
 	})
 	if repoErr != nil {
 		return returnData, errors.Wrap(repoErr, "[Controller][CreateAccount()]->Fail to create account")
