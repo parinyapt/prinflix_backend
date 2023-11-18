@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"encoding/base64"
+	"os"
 	"time"
 
+	PTGUcryptography "github.com/parinyapt/golang_utils/cryptography/aes/v1"
 	modelController "github.com/parinyapt/prinflix_backend/model/controller"
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelRepository "github.com/parinyapt/prinflix_backend/model/repository"
@@ -13,8 +16,8 @@ import (
 )
 
 const (
-	TemporaryCodeTypeEmailVerificationExpiredIn = time.Minute * 30
-	TemporaryCodeTypePasswordResetExpiredIn     = time.Minute * 10
+	TemporaryCodeTypeEmailVerificationExpiredIn = time.Minute * 60 * 24
+	TemporaryCodeTypePasswordResetExpiredIn     = time.Minute * 15
 	TemporaryCodeTypeOAuthStateExpiredIn        = time.Minute * 5
 )
 
@@ -106,4 +109,28 @@ func (receiver ControllerReceiverArgument) DeleteTemporaryCode(param modelContro
 	}
 
 	return nil
+}
+
+func EncryptTemporaryCode(codeUUID string) (codeUUIDEncryptBase64 string, err error) {
+	codeUUIDEncrypt, err := PTGUcryptography.Encrypt(os.Getenv("ENCRYPTION_KEY_TEMP_CODE"), codeUUID)
+	if err != nil {
+		return codeUUIDEncryptBase64, errors.Wrap(err, "[Controller][EncryptTemporaryCode()]->Fail to encrypt code uuid")
+	}
+	codeUUIDEncryptBase64 = base64.URLEncoding.EncodeToString(codeUUIDEncrypt)
+
+	return codeUUIDEncryptBase64, nil
+}
+
+func DecryptTemporaryCode(codeUUIDEncryptBase64 string) (codeUUID string, err error) {
+	codeUUIDEncrypt, err := base64.URLEncoding.DecodeString(codeUUIDEncryptBase64)
+	if err != nil {
+		return codeUUID, errors.Wrap(err, "[Controller][DecryptTemporaryCode()]->Fail to decode base64")
+	}
+
+	codeUUID, err = PTGUcryptography.Decrypt(os.Getenv("ENCRYPTION_KEY_TEMP_CODE"), codeUUIDEncrypt)
+	if err != nil {
+		return codeUUID, errors.Wrap(err, "[Controller][DecryptTemporaryCode()]->Fail to decrypt code uuid")
+	}
+
+	return codeUUID, nil
 }
