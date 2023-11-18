@@ -20,7 +20,8 @@ const (
 
 	TemporaryCodeTypeEmailVerification = "email_verification"
 	TemporaryCodeTypePasswordReset     = "password_reset"
-	TemporaryCodeTypeOAuthState        = "oauth_state"
+	TemporaryCodeTypeOAuthStateLine    = "oauth_state_line"
+	TemporaryCodeTypeOAuthStateGoogle  = "oauth_state_google"
 )
 
 type Account struct {
@@ -67,7 +68,7 @@ func (AccountOAuth) TableName() string {
 type TemporaryCode struct {
 	UUID        uuid.UUID `gorm:"column:auth_temporary_code_uuid;type:uuid;primary_key;not null"`
 	AccountUUID uuid.UUID `gorm:"column:auth_temporary_code_account_uuid;not null"`
-	Type        string    `gorm:"column:auth_temporary_code_type;type:enum('email_verification', 'password_reset', 'oauth_state');not null"`
+	Type        string    `gorm:"column:auth_temporary_code_type;type:enum('email_verification', 'password_reset', 'oauth_state_line', 'oauth_state_google');not null"`
 	CreatedAt   time.Time `gorm:"column:auth_temporary_code_created_at;type:timestamp;not null"`
 }
 

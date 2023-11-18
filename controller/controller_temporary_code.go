@@ -79,7 +79,7 @@ func (receiver ControllerReceiverArgument) CheckTemporaryCode(param modelControl
 			return returnData, nil
 		}
 	}
-	if repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthState {
+	if repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateLine || repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateGoogle {
 		if time.Now().After(repoData.Data.CreatedAt.Add(TemporaryCodeTypeOAuthStateExpiredIn)) {
 			returnData.IsExpired = true
 			return returnData, nil
