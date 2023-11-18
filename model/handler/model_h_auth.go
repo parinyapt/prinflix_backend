@@ -18,3 +18,13 @@ type ResponseAccessToken struct {
 	AccessToken         string        `json:"access_token"`
 	AccessTokenExpireIn time.Duration `json:"expire_in"`
 }
+
+type ResponseVerifyToken struct {
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	ImageStatus   bool   `json:"have_image"`
+	ImageURL      string `json:"image_url"`
+	Status        string `json:"status"`
+	Role          string `json:"role"`
+}

@@ -201,3 +201,39 @@ func RegisterHandler(c *gin.Context) {
 		Data:         "Register Success",
 	})
 }
+
+func VerifyTokenHandler(c *gin.Context) {
+	var response modelHandler.ResponseVerifyToken
+
+	controllerInstance := controller.NewController(database.DB)
+
+	accountInfo, err := controllerInstance.GetAccountInfo(modelController.ParamGetAccountInfo{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+	})
+	if err != nil {
+		logger.Error("[Handler][VerifyTokenHandler()]->Error GetAccountInfo()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	if accountInfo.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	response.Name = accountInfo.Name
+	response.Email = accountInfo.Email
+	response.EmailVerified = accountInfo.EmailVerified
+	response.Status = accountInfo.Status
+	response.ImageStatus = accountInfo.Image
+	response.Role = accountInfo.Role
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         response,
+	})
+}
