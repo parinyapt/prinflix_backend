@@ -8,6 +8,21 @@ import (
 	utilsDatabase "github.com/parinyapt/prinflix_backend/utils/database"
 )
 
+const (
+	AccountStatusActive   = "active"
+	AccountStatusInactive = "inactive"
+
+	AccountRoleAdmin = "admin"
+	AccountRoleUser  = "user"
+
+	AccountOAuthProviderLine   = "line"
+	AccountOAuthProviderGoogle = "google"
+
+	TemporaryCodeTypeEmailVerification = "email_verification"
+	TemporaryCodeTypePasswordReset     = "password_reset"
+	TemporaryCodeTypeOAuthState        = "oauth_state"
+)
+
 type Account struct {
 	UUID          uuid.UUID `gorm:"column:account_uuid;primary_key;not null"`
 	Name          string    `gorm:"column:account_name;not null"`
