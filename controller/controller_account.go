@@ -49,11 +49,11 @@ func (receiver ControllerReceiverArgument) CreateAccount(param modelController.P
 }
 
 func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.ParamGetAccountInfo) (returnData modelController.ReturnGetAccountInfo, err error) {
-	
+
 	if param.AccountUUID == "" && param.Email == "" {
 		return returnData, errors.New("[Controller][GetAccountInfo()]->Both account uuid and email are empty")
 	}
-	
+
 	repoInstance := repository.NewRepository(receiver.databaseTX)
 	var repoData modelRepository.ResultFetchOneAccount
 	var repoErr error
@@ -84,6 +84,40 @@ func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.
 	returnData.Status = repoData.Data.Status
 	returnData.Image = repoData.Data.Image
 	returnData.Role = repoData.Data.Role
+
+	return returnData, nil
+}
+
+func (receiver ControllerReceiverArgument) UpdateAccount(accountUUID string, param modelController.ParamUpdateAccount) (returnData modelController.ReturnUpdateAccount, err error) {
+	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(accountUUID)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][UpdateAccount()]->Fail to parse account uuid")
+	}
+
+	repoInstance := repository.NewRepository(receiver.databaseTX)
+
+	if param.Password != "" {
+		passwordHash, err := PTGUpassword.HashPassword(param.Password, 14)
+		if err != nil {
+			return returnData, errors.Wrap(err, "[Controller][UpdateAccount()]->Fail to hash password")
+		}
+		param.Password = passwordHash
+	}
+
+	repoData, repoErr := repoInstance.UpdateAccountByUUID(accountUUIDparse, modelRepository.ParamUpdateAccount{
+		Name:          param.Name,
+		EmailVerified: param.EmailVerified,
+		Password:      param.Password,
+		Image:         param.Image,
+	})
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][UpdateAccount()]->Fail to update account")
+	}
+
+	if !repoData.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
 
 	return returnData, nil
 }

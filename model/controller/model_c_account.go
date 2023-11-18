@@ -29,3 +29,15 @@ type ReturnGetAccountInfo struct {
 	Image         bool
 	Role          string
 }
+
+type ParamUpdateAccount struct {
+	AccountUUID   string
+	Name          string
+	EmailVerified bool
+	Password      string
+	Image         bool
+}
+
+type ReturnUpdateAccount struct {
+	IsNotFound bool
+}
