@@ -7,6 +7,7 @@ import (
 	originalmysql "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 
 	"github.com/parinyapt/prinflix_backend/logger"
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
@@ -30,7 +31,17 @@ func initializeConnectMariaDB() {
 		ParseTime: true,
 		Loc:       time.Local,
 	}
-	database, err := gorm.Open(mysql.Open(dsn.FormatDSN()), &gorm.Config{})
+
+	var gormConfig *gorm.Config
+	if os.Getenv("DEPLOY_MODE") == "development" {
+		gormConfig = &gorm.Config{}
+	} else {
+		gormConfig = &gorm.Config{
+			Logger: gormLogger.Default.LogMode(gormLogger.Silent),
+		}
+	}
+
+	database, err := gorm.Open(mysql.Open(dsn.FormatDSN()), gormConfig)
 	if err != nil {
 		logger.Fatal("Failed to connect MariaDB database", logger.Field("error", err))
 	}
@@ -39,6 +50,8 @@ func initializeConnectMariaDB() {
 	err = database.AutoMigrate(
 		modelDatabase.Account{},
 		modelDatabase.AuthSession{},
+		modelDatabase.AccountOAuth{},
+		modelDatabase.TemporaryCode{},
 	)
 	if err != nil {
 		logger.Fatal("Failed to AutoMigrate database", logger.Field("error", err))
