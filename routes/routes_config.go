@@ -9,16 +9,16 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/parinyapt/prinflix_backend/logger"
+
+	apiConfig "github.com/parinyapt/prinflix_backend/config"
 )
 
 func configCors(router *gin.Engine) {
 	config := cors.DefaultConfig()
 
 	// Set Allow Origins
-	config.AllowAllOrigins = true
-	// config.AllowOrigins = []string{
-	// 	"https://prinpt.com",
-	// }
+	// config.AllowAllOrigins = true
+	config.AllowOrigins = apiConfig.CorsAllowOrigins
 
 	// Set Allow Methods
 	config.AllowMethods = []string{
