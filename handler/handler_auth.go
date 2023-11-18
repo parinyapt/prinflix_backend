@@ -237,3 +237,74 @@ func VerifyTokenHandler(c *gin.Context) {
 		Data:         response,
 	})
 }
+
+func RefreshTokenHandler(c *gin.Context) {
+	var response modelHandler.ResponseAccessToken
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	clearAuthSessionErr := controllerInstance.DeleteAuthSessionByAccountUUID(c.GetString("ACCOUNT_UUID"))
+	if clearAuthSessionErr != nil {
+		logger.Error("[Handler][RefreshTokenHandler()]->Error Clear Auth Session", logger.Field("error", clearAuthSessionErr.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	createAuthSession, err := controllerInstance.CreateAuthSession(c.GetString("ACCOUNT_UUID"))
+	if err != nil {
+		logger.Error("[Handler][RefreshTokenHandler()]->Error Create Auth Session", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	generateAccessToken, err := controller.GenerateAccessToken(modelController.ParamGenerateAccessToken{
+		SessionUUID: createAuthSession.SessionUUID.String(),
+		ExpiredAt:   createAuthSession.ExpiredAt,
+	})
+	if err != nil {
+		logger.Error("[Handler][RefreshTokenHandler()]->Error Generate Access Token", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	response.TokenType = generateAccessToken.TokenType
+	response.AccessToken = generateAccessToken.AccessToken
+	response.AccessTokenExpireIn = time.Duration(createAuthSession.ExtiredIn.Seconds())
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         response,
+	})
+}
+
+func RevokeTokenHandler(c *gin.Context) {
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	err := controllerInstance.DeleteAuthSessionByAccountUUID(c.GetString("ACCOUNT_UUID"))
+	if err != nil {
+		logger.Error("[Handler][RevokeTokenHandler()]->Error Delete Auth Session", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         "Revoke Token Success",
+	})
+}
