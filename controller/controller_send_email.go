@@ -24,6 +24,11 @@ func SendEmail(param modelController.ParamSendEmail) (err error) {
 		url = strings.Replace(url, ":session_id", param.Data, -1)
 		subject = "Prinflix Reset Password"
 		body = "Reset your password by clicking this link: " + url + ". This link will be expired in 15 minutes."
+	case modelDatabase.TemporaryCodeTypeEmailVerification:
+		url = os.Getenv("APP_BASE_URL") + "/v1/auth/email_verify/:code"
+		url = strings.Replace(url, ":code", param.Data, -1)
+		subject = "Prinflix Email Verification"
+		body = "Verify your email by clicking this link: " + url + ". This link will be expired in 24 hours."
 	default:
 		return errors.New("[Controller][SendEmail()]->invalid type")
 	}
