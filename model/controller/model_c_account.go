@@ -21,6 +21,7 @@ type ParamGetAccountInfo struct {
 type ReturnGetAccountInfo struct {
 	IsNotFound bool
 
+	AccountUUID   uuid.UUID
 	Name          string
 	Email         string
 	EmailVerified bool

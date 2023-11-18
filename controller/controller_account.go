@@ -57,7 +57,7 @@ func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.
 	repoInstance := repository.NewRepository(receiver.databaseTX)
 	var repoData modelRepository.ResultFetchOneAccount
 	var repoErr error
-	
+
 	if param.AccountUUID != "" {
 		accountUUIDparse, err := utilsUUID.ParseUUIDfromString(param.AccountUUID)
 		if err != nil {
@@ -77,6 +77,7 @@ func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.
 		return returnData, nil
 	}
 
+	returnData.AccountUUID = repoData.Data.UUID
 	returnData.Name = repoData.Data.Name
 	returnData.Email = repoData.Data.Email
 	returnData.EmailVerified = repoData.Data.EmailVerified
