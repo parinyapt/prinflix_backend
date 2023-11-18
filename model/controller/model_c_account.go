@@ -10,16 +10,21 @@ type ParamCreateAccount struct {
 
 type ReturnCreateAccount struct {
 	IsExist bool
-	UUID uuid.UUID
+	UUID    uuid.UUID
+}
+
+type ParamGetAccountInfo struct {
+	AccountUUID string
+	Email       string
 }
 
 type ReturnGetAccountInfo struct {
 	IsNotFound bool
 
-	Name       string
-	Email      string
+	Name          string
+	Email         string
 	EmailVerified bool
-	Status     string
-	Image      bool
-	Role       string
+	Status        string
+	Image         bool
+	Role          string
 }
