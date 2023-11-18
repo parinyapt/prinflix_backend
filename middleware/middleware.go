@@ -7,6 +7,7 @@ import (
 	"github.com/parinyapt/prinflix_backend/controller"
 	"github.com/parinyapt/prinflix_backend/database"
 	"github.com/parinyapt/prinflix_backend/logger"
+	modelController "github.com/parinyapt/prinflix_backend/model/controller"
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelUtils "github.com/parinyapt/prinflix_backend/model/utils"
 	utilsResponse "github.com/parinyapt/prinflix_backend/utils/response"
@@ -25,7 +26,9 @@ func (receiver *MiddlewareReceiverArgument) CheckAccount(c *gin.Context) {
 
 	controllerInstance := controller.NewController(database.DB)
 
-	accountInfo, err := controllerInstance.GetAccountInfo(accountUUID)
+	accountInfo, err := controllerInstance.GetAccountInfo(modelController.ParamGetAccountInfo{
+		AccountUUID: accountUUID,
+	})
 	if err != nil {
 		logger.Error("[Middleware][CheckAccount()]->Error GetAccountInfo()", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
