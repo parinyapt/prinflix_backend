@@ -28,6 +28,11 @@ type ResultFetchOneAccountOAuth struct {
 	Data    *modelDatabase.AccountOAuth
 }
 
+type ResultFetchManyAccountOAuth struct {
+	IsFound bool
+	Data []modelDatabase.AccountOAuth
+}
+
 type ParamDeleteAccountOAuthByProviderAndAccountUUID struct {
 	Provider    string
 	AccountUUID uuid.UUID

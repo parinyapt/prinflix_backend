@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelRepository "github.com/parinyapt/prinflix_backend/model/repository"
 	"github.com/pkg/errors"
@@ -45,6 +46,22 @@ func (receiver RepositoryReceiverArgument) FetchOneAccountOAuthByProviderAndAcco
 	}).Limit(1).Find(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchOneAccountOAuthByProviderAndAccountUUID()]->"+errorDatabaseQueryFailed)
+	}
+	if resultDB.RowsAffected == 0 {
+		return result, nil
+	}
+
+	result.IsFound = true
+
+	return result, nil
+}
+
+func (receiver RepositoryReceiverArgument) FetchManyAccountOAuthByAccountUUID(accountUUID uuid.UUID) (result modelRepository.ResultFetchManyAccountOAuth, err error) {
+	resultDB := receiver.databaseTX.Where(&modelDatabase.AccountOAuth{
+		AccountUUID: accountUUID,
+	}).Find(&result.Data)
+	if resultDB.Error != nil {
+		return result, errors.Wrap(resultDB.Error, "[Repository][FetchManyAccountOAuthByAccountUUID()]->"+errorDatabaseQueryFailed)
 	}
 	if resultDB.RowsAffected == 0 {
 		return result, nil
