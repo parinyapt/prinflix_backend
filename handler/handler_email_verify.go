@@ -17,7 +17,7 @@ import (
 )
 
 func EmailVerifyHandler(c *gin.Context) {
-	var uriParam modelHandler.UriParamEmailVerifyHandler
+	var uriParam modelHandler.UriParamEmailVerify
 
 	if err := c.ShouldBindUri(&uriParam); err != nil {
 		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.EmailVerifyFailPagePath))

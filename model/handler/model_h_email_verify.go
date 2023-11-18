@@ -1,5 +1,5 @@
 package modelHandler
 
-type UriParamEmailVerifyHandler struct {
+type UriParamEmailVerify struct {
 	Code string `uri:"code" validate:"required,base64url"`
 }
