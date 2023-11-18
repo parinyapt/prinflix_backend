@@ -30,3 +30,8 @@ type ReturnGenerateAccessToken struct {
 	TokenType   string
 	AccessToken string
 }
+
+type ReturnValidateAccessToken struct {
+	IsExpired   bool
+	SessionUUID string
+}

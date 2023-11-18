@@ -57,3 +57,21 @@ func GenerateAccessToken(param modelController.ParamGenerateAccessToken) (return
 
 	return returnData, nil
 }
+
+func ValidateAccessToken(accessToken string) (returnData modelController.ReturnValidateAccessToken, err error) {
+	claims, isExpireOrNotValidYet, err := PTGUjwt.Validate(accessToken, PTGUjwt.JwtValidateConfig{
+		SignKey: os.Getenv("JWT_SIGN_KEY_ACCESS_TOKEN"),
+	})
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][ValidateAccessToken()]->Fail to validate access token")
+	}
+
+	if isExpireOrNotValidYet {
+		returnData.IsExpired = true
+		return returnData, nil
+	}
+
+	returnData.SessionUUID = claims.(map[string]interface{})["SessionID"].(string)
+
+	return returnData, nil
+}
