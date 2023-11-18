@@ -38,6 +38,35 @@ func (receiver ControllerReceiverArgument) CreateAuthSession(accountUUID string)
 	return returnData, nil
 }
 
+func (receiver ControllerReceiverArgument) CheckAuthSession(sessionUUID string) (returnData modelController.ReturnCheckAuthSession, err error) {
+	sessionUUIDparse, err := utilsUUID.ParseUUIDfromString(sessionUUID)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][CheckAuthSession()]->Fail to parse session uuid")
+	}
+
+	repoInstance := repository.NewRepository(receiver.databaseTX)
+
+	repoData, repoErr := repoInstance.FetchOneAuthSessionByUUID(sessionUUIDparse)
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][CheckAuthSession()]->Fail to fetch one auth session by uuid")
+	}
+
+	if !repoData.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
+
+	if repoData.Data.ExpiredAt.Before(time.Now()) {
+		returnData.IsExpired = true
+		return returnData, nil
+	}
+
+	returnData.AccountUUID = repoData.Data.AccountUUID
+	returnData.SessionUUID = repoData.Data.UUID
+
+	return returnData, nil
+}
+
 func (receiver ControllerReceiverArgument) DeleteAuthSessionByAccountUUID(accountUUID string) (err error) {
 	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(accountUUID)
 	if err != nil {

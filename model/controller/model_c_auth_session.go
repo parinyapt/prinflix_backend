@@ -11,3 +11,10 @@ type ReturnCreateAuthSession struct {
 	ExtiredIn   time.Duration
 	ExpiredAt   time.Time
 }
+
+type ReturnCheckAuthSession struct {
+	IsNotFound  bool
+	IsExpired   bool
+	AccountUUID uuid.UUID
+	SessionUUID uuid.UUID
+}
