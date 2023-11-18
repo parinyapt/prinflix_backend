@@ -38,8 +38,8 @@ func (receiver RepositoryReceiverArgument) FetchOneAccountByEmail(email string) 
 	return result, nil
 }
 
-func (receiver RepositoryReceiverArgument) FetchOneAccountByUUID(uuid uuid.UUID) (result modelRepository.ResultFetchOneAccount, err error) {
-	resultDB := receiver.databaseTX.Where(&modelDatabase.Account{UUID: uuid}).Limit(1).Find(&result.Data)
+func (receiver RepositoryReceiverArgument) FetchOneAccountByUUID(accountUUID uuid.UUID) (result modelRepository.ResultFetchOneAccount, err error) {
+	resultDB := receiver.databaseTX.Where(&modelDatabase.Account{UUID: accountUUID}).Limit(1).Find(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchOneAccountByUUID()]->"+errorDatabaseQueryFailed)
 	}
@@ -52,8 +52,8 @@ func (receiver RepositoryReceiverArgument) FetchOneAccountByUUID(uuid uuid.UUID)
 	return result, nil
 }
 
-func (receiver RepositoryReceiverArgument) UpdateAccountByUUID(uuid uuid.UUID, param modelRepository.ParamUpdateAccount) (result modelRepository.ResultIsFoundOnly, err error) {
-	resultDB := receiver.databaseTX.Model(&modelDatabase.Account{UUID: uuid}).Updates(&modelDatabase.Account{
+func (receiver RepositoryReceiverArgument) UpdateAccountByUUID(accountUUID uuid.UUID, param modelRepository.ParamUpdateAccount) (result modelRepository.ResultIsFoundOnly, err error) {
+	resultDB := receiver.databaseTX.Model(&modelDatabase.Account{UUID: accountUUID}).Updates(&modelDatabase.Account{
 		Name:          param.Name,
 		Email:         param.Email,
 		EmailVerified: param.EmailVerified,
@@ -74,8 +74,8 @@ func (receiver RepositoryReceiverArgument) UpdateAccountByUUID(uuid uuid.UUID, p
 	return result, nil
 }
 
-func (receiver RepositoryReceiverArgument) DeleteAccountByUUID(uuid uuid.UUID) (result modelRepository.ResultIsFoundOnly, err error) {
-	resultDB := receiver.databaseTX.Where(&modelDatabase.Account{UUID: uuid}).Delete(&modelDatabase.Account{})
+func (receiver RepositoryReceiverArgument) DeleteAccountByUUID(accountUUID uuid.UUID) (result modelRepository.ResultIsFoundOnly, err error) {
+	resultDB := receiver.databaseTX.Where(&modelDatabase.Account{UUID: accountUUID}).Delete(&modelDatabase.Account{})
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][DeleteAccountByUUID()]->"+errorDatabaseQueryFailed)
 	}

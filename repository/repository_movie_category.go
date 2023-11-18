@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (receiver RepositoryReceiverArgument) FetchOneMovieCategoryByID(id uint) (result modelRepository.ResultFetchOneMovieCategory, err error) {
-	resultDB := receiver.databaseTX.Where(&modelDatabase.MovieCategory{ID: id}).Limit(1).Find(&result.Data)
+func (receiver RepositoryReceiverArgument) FetchOneMovieCategoryByID(categoryID uint) (result modelRepository.ResultFetchOneMovieCategory, err error) {
+	resultDB := receiver.databaseTX.Where(&modelDatabase.MovieCategory{ID: categoryID}).Limit(1).Find(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchOneMovieCategoryByID()]->"+errorDatabaseQueryFailed)
 	}

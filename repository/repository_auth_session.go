@@ -20,8 +20,8 @@ func (receiver RepositoryReceiverArgument) CreateAuthSession(param modelReposito
 	return nil
 }
 
-func (receiver RepositoryReceiverArgument) FetchOneAuthSessionByUUID(uuid uuid.UUID) (result modelRepository.ResultFetchOneAuthSession, err error) {
-	resultDB := receiver.databaseTX.Where(&modelDatabase.AuthSession{UUID: uuid}).Limit(1).Find(&result.Data)
+func (receiver RepositoryReceiverArgument) FetchOneAuthSessionByUUID(sessionUUID uuid.UUID) (result modelRepository.ResultFetchOneAuthSession, err error) {
+	resultDB := receiver.databaseTX.Where(&modelDatabase.AuthSession{UUID: sessionUUID}).Limit(1).Find(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchOneAuthSessionByUUID()]->"+errorDatabaseQueryFailed)
 	}
