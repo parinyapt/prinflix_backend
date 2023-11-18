@@ -29,7 +29,3 @@ type ParamUpdateAccount struct {
 	Image         bool
 	Role          string
 }
-
-type ResultUpdateAccountByUUID struct {
-	IsFound bool
-}
