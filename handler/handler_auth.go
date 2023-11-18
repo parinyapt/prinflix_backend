@@ -30,7 +30,7 @@ func LoginHandler(c *gin.Context) {
 
 	isValidatePass, errorFieldList, validatorError := PTGUvalidator.Validate(request)
 	if validatorError != nil {
-		logger.Error("[Handler][Login()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		logger.Error("[Handler][LoginHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
@@ -53,7 +53,7 @@ func LoginHandler(c *gin.Context) {
 		Password: request.Password,
 	})
 	if err != nil {
-		logger.Error("[Handler][Login()]->Error Check Login", logger.Field("error", err.Error()))
+		logger.Error("[Handler][LoginHandler()]->Error Check Login", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
@@ -69,7 +69,7 @@ func LoginHandler(c *gin.Context) {
 
 	clearAuthSessionErr := controllerInstance.DeleteAuthSessionByAccountUUID(checkLogin.AccountUUID.String())
 	if clearAuthSessionErr != nil {
-		logger.Error("[Handler][Login()]->Error Clear Auth Session", logger.Field("error", clearAuthSessionErr.Error()))
+		logger.Error("[Handler][LoginHandler()]->Error Clear Auth Session", logger.Field("error", clearAuthSessionErr.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
@@ -78,7 +78,7 @@ func LoginHandler(c *gin.Context) {
 
 	createAuthSession, err := controllerInstance.CreateAuthSession(checkLogin.AccountUUID.String())
 	if err != nil {
-		logger.Error("[Handler][Login()]->Error Create Auth Session", logger.Field("error", err.Error()))
+		logger.Error("[Handler][LoginHandler()]->Error Create Auth Session", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
@@ -90,7 +90,7 @@ func LoginHandler(c *gin.Context) {
 		ExpiredAt:   createAuthSession.ExpiredAt,
 	})
 	if err != nil {
-		logger.Error("[Handler][Login()]->Error Generate Access Token", logger.Field("error", err.Error()))
+		logger.Error("[Handler][LoginHandler()]->Error Generate Access Token", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
@@ -121,7 +121,7 @@ func RegisterHandler(c *gin.Context) {
 
 	isValidatePass, errorFieldList, validatorError := PTGUvalidator.Validate(request)
 	if validatorError != nil {
-		logger.Error("[Handler][Register()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		logger.Error("[Handler][RegisterHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
@@ -145,7 +145,7 @@ func RegisterHandler(c *gin.Context) {
 		Password: request.Password,
 	})
 	if err != nil {
-		logger.Error("[Handler][Register()]->Error Create Account", logger.Field("error", err.Error()))
+		logger.Error("[Handler][RegisterHandler()]->Error Create Account", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
