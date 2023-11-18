@@ -48,15 +48,26 @@ func (receiver ControllerReceiverArgument) CreateAccount(param modelController.P
 	return returnData, nil
 }
 
-func (receiver ControllerReceiverArgument) GetAccountInfo(accountUUID string) (returnData modelController.ReturnGetAccountInfo, err error) {
-	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(accountUUID)
-	if err != nil {
-		return returnData, errors.Wrap(err, "[Controller][GetAccountInfo()]->Fail to parse account uuid")
+func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.ParamGetAccountInfo) (returnData modelController.ReturnGetAccountInfo, err error) {
+	
+	if param.AccountUUID == "" && param.Email == "" {
+		return returnData, errors.New("[Controller][GetAccountInfo()]->Both account uuid and email are empty")
 	}
 	
 	repoInstance := repository.NewRepository(receiver.databaseTX)
+	var repoData modelRepository.ResultFetchOneAccount
+	var repoErr error
+	
+	if param.AccountUUID != "" {
+		accountUUIDparse, err := utilsUUID.ParseUUIDfromString(param.AccountUUID)
+		if err != nil {
+			return returnData, errors.Wrap(err, "[Controller][GetAccountInfo()]->Fail to parse account uuid")
+		}
+		repoData, repoErr = repoInstance.FetchOneAccountByUUID(accountUUIDparse)
+	} else {
+		repoData, repoErr = repoInstance.FetchOneAccountByEmail(param.Email)
+	}
 
-	repoData, repoErr := repoInstance.FetchOneAccountByUUID(accountUUIDparse)
 	if repoErr != nil {
 		return returnData, errors.Wrap(repoErr, "[Controller][GetAccountInfo()]->Fail to fetch one account by uuid")
 	}
