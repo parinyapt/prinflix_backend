@@ -12,6 +12,7 @@ import (
 	"github.com/parinyapt/prinflix_backend/database"
 	"github.com/parinyapt/prinflix_backend/logger"
 	modelController "github.com/parinyapt/prinflix_backend/model/controller"
+	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelHandler "github.com/parinyapt/prinflix_backend/model/handler"
 	modelUtils "github.com/parinyapt/prinflix_backend/model/utils"
 	utilsResponse "github.com/parinyapt/prinflix_backend/utils/response"
@@ -155,6 +156,40 @@ func RegisterHandler(c *gin.Context) {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusConflict,
 			Error:        "Email already exist",
+		})
+		return
+	}
+
+	createTemporaryCode, err := controllerInstance.CreateTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: createAccount.UUID.String(),
+		Type:        modelDatabase.TemporaryCodeTypeEmailVerification,
+	})
+	if err != nil {
+		logger.Error("[Handler][RegisterHandler()]->Error Create Temporary Code", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	codeUUIDEncryptBase64, err := controller.EncryptTemporaryCode(createTemporaryCode.CodeUUID.String())
+	if err != nil {
+		logger.Error("[Handler][RegisterHandler()]->Error Encrypt Temporary Code", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	err = controller.SendEmail(modelController.ParamSendEmail{
+		Email: request.Email,
+		Data:  codeUUIDEncryptBase64,
+		Type:  modelDatabase.TemporaryCodeTypeEmailVerification,
+	})
+	if err != nil {
+		logger.Error("[Handler][RegisterHandler()]->Error Send Email", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
 		})
 		return
 	}
