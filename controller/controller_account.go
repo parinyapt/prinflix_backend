@@ -47,3 +47,31 @@ func (receiver ControllerReceiverArgument) CreateAccount(param modelController.P
 
 	return returnData, nil
 }
+
+func (receiver ControllerReceiverArgument) GetAccountInfo(accountUUID string) (returnData modelController.ReturnGetAccountInfo, err error) {
+	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(accountUUID)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][GetAccountInfo()]->Fail to parse account uuid")
+	}
+	
+	repoInstance := repository.NewRepository(receiver.databaseTX)
+
+	repoData, repoErr := repoInstance.FetchOneAccountByUUID(accountUUIDparse)
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][GetAccountInfo()]->Fail to fetch one account by uuid")
+	}
+
+	if !repoData.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
+
+	returnData.Name = repoData.Data.Name
+	returnData.Email = repoData.Data.Email
+	returnData.EmailVerified = repoData.Data.EmailVerified
+	returnData.Status = repoData.Data.Status
+	returnData.Image = repoData.Data.Image
+	returnData.Role = repoData.Data.Role
+
+	return returnData, nil
+}

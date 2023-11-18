@@ -12,3 +12,14 @@ type ReturnCreateAccount struct {
 	IsExist bool
 	UUID uuid.UUID
 }
+
+type ReturnGetAccountInfo struct {
+	IsNotFound bool
+
+	Name       string
+	Email      string
+	EmailVerified bool
+	Status     string
+	Image      bool
+	Role       string
+}
