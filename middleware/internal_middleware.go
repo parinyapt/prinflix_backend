@@ -32,7 +32,7 @@ func GetHeaderAPIKey(c *gin.Context) {
 	if validatorError != nil {
 		logger.Error("[Middleware][GetHeaderAPIKey()]->Error Validate Data", logger.Field("error", validatorError.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
+			ResponseCode: http.StatusInternalServerError,
 		})
 		c.Abort()
 		return
@@ -55,7 +55,7 @@ func AuthWithAPIKey(c *gin.Context) {
 	if apiKey != os.Getenv("INTERNAL_API_KEY") {
 		logger.Error("[Middleware][AuthWithAPIKey()]->Error API Key", logger.Field("error", "API Key is not valid"))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusUnauthorized,
+			ResponseCode: http.StatusInternalServerError,
 		})
 		c.Abort()
 		return

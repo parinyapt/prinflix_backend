@@ -34,7 +34,7 @@ func GetHeaderAuthorizationToken(c *gin.Context) {
 	if validatorError != nil {
 		logger.Error("[Middleware][GetHeaderAuthorizationToken()]->Error Validate Data", logger.Field("error", validatorError.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
+			ResponseCode: http.StatusInternalServerError,
 		})
 		c.Abort()
 		return
@@ -65,7 +65,7 @@ func AuthWithAccessToken(c *gin.Context) {
 	if validatorError != nil {
 		logger.Error("[Middleware][AuthWithAccessToken()]->Error Validate Data", logger.Field("error", validatorError.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
+			ResponseCode: http.StatusInternalServerError,
 		})
 		c.Abort()
 		return
