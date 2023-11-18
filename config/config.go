@@ -16,5 +16,7 @@ func InitializeConfig() {
 	initializeEnvironmentVariableCheck()
 	initializeGlobalTimezone()
 
+	initializeAPIConfigFile()
+
 	logger.Info("Initialize Config Success")
 }

@@ -1,0 +1,15 @@
+{
+  "domain": ["http://localhost"],
+  "base_url": "http://localhost:4000",
+  "path": {
+    "connect_oauth": {
+      "success": "/auth/connect/success?provider=:provider",
+      "fail": "/auth/connect/fail?provider=:provider"
+    },
+    "email_verification": {
+      "success": "/auth/email-verification/success",
+      "fail": "/auth/email-verification/fail"
+    },
+    "reset_password_page": "/reset-password/:session_id"
+  }
+}
