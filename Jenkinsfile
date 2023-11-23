@@ -85,7 +85,7 @@ pipeline {
             }
             steps {
                 echo '--- Start Deploy Stage ---'
-                sshagent(credentials:['ssh-server']){
+                sshagent(credentials:['ssh-prin-server-1']){
                     sh "ssh  -o StrictHostKeyChecking=no  ${SERVER_USERNAME}@${SERVER_IPADDRESS} -p ${SERVER_PORT} '${SSH_SCRIPT}'"
                 }
                 echo '--- Finish Deploy Stage ---'
