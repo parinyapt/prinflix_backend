@@ -19,10 +19,10 @@ func InitAuthAPI(router *gin.RouterGroup) {
 
 		google := r.Group("/google")
 		{
-			// public := google.Group("")
-			// {
-			// 	public.GET("/callback", handler.GoogleCallbackHandler)
-			// }
+			public := google.Group("")
+			{
+				public.GET("/callback", handler.GoogleCallbackHandler)
+			}
 			external := google.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
 			{
 				external.POST("/connect", handler.RequestConnectGoogleOAuthHandler)

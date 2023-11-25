@@ -2,8 +2,10 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	PTGUvalidator "github.com/parinyapt/golang_utils/validator/v1"
 	"github.com/parinyapt/prinflix_backend/controller"
 	"github.com/parinyapt/prinflix_backend/database"
 	"github.com/parinyapt/prinflix_backend/logger"
@@ -11,6 +13,7 @@ import (
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelHandler "github.com/parinyapt/prinflix_backend/model/handler"
 	modelUtils "github.com/parinyapt/prinflix_backend/model/utils"
+	utilsConfigFile "github.com/parinyapt/prinflix_backend/utils/config_file"
 	utilsResponse "github.com/parinyapt/prinflix_backend/utils/response"
 )
 
@@ -196,4 +199,78 @@ func RequestDisconnectLineOAuthHandler(c *gin.Context) {
 		ResponseCode: http.StatusOK,
 		Data: 			 "Line OAuth Disconnected",
 	})
+}
+
+func GoogleCallbackHandler(c *gin.Context) {
+	var queryParam modelHandler.QueryParamOAuthCallback
+
+	if err := c.ShouldBind(&queryParam); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Handler][GoogleCallbackHandler()]->Error Validate()", logger.Field("error", validatorError.Error()))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !isValidatePass {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	checkTemporaryCode, err := controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
+		CodeUUID: queryParam.State,
+		Type:     modelDatabase.TemporaryCodeTypeOAuthStateGoogle,
+	})
+	if err != nil {
+		logger.Error("[Handler][GoogleCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		return
+	}
+	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
+		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		return
+	}
+
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: checkTemporaryCode.AccountUUID.String(),
+		Type:        modelDatabase.TemporaryCodeTypeOAuthStateGoogle,
+	})
+	if err != nil {
+		logger.Error("[Handler][GoogleCallbackHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		return
+	}
+
+	getGoogleOAuthUserInfo, err := controller.GetGoogleOAuthUserInfo(queryParam.Code)
+	if err != nil {
+		logger.Error("[Handler][GoogleCallbackHandler()]->Error GetGoogleOAuthUserInfo()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		return
+	}
+
+	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
+		AccountUUID: checkTemporaryCode.AccountUUID.String(),
+		Provider:    modelDatabase.AccountOAuthProviderGoogle,
+		UserID:      getGoogleOAuthUserInfo.UserID,
+		UserEmail:   getGoogleOAuthUserInfo.Email,
+		UserPicture: getGoogleOAuthUserInfo.Picture,
+	})
+	if err != nil {
+		logger.Error("[Handler][GoogleCallbackHandler()]->Error CreateAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		return
+	}
+
+	databaseTx.Commit()
+
+	redirecturl := strings.Replace(utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthSuccessPagePath), ":provider", "Google", -1)
+	
+	c.Redirect(http.StatusFound, redirecturl)
 }
