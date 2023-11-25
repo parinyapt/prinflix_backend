@@ -74,6 +74,7 @@ pipeline {
                 sh "docker tag ${IMAGE_NAME}:${PAYLOAD_TAGNAME} ${IMAGE_REGISTRY}/${IMAGE_NAME}:${PAYLOAD_TAGNAME}"
                 sh "docker push ${IMAGE_REGISTRY}/${IMAGE_NAME}:${PAYLOAD_TAGNAME}"
                 sh "docker image rm ${IMAGE_NAME}:${PAYLOAD_TAGNAME}"
+                sh "docker image rm ${IMAGE_REGISTRY}/${IMAGE_NAME}:${PAYLOAD_TAGNAME}"
             }
         }
         stage('Deploy') {
