@@ -17,39 +17,39 @@ func InitAuthAPI(router *gin.RouterGroup) {
 		r.POST("/reset_password", handler.ResetPasswordHandler)
 		r.GET("/email_verify/:code", handler.EmailVerifyHandler)
 
-		// google := r.Group("/google")
-		// {
-		// 	public := google.Group("")
-		// 	{
-		// 		public.GET("/callback", handler.GoogleCallbackHandler)
-		// 	}
-		// 	external := google.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
-		// 	{
-		// 		external.POST("/connect", handler.RequestConnectGoogleOAuthHandler)
-		// 		external.POST("/disconnect", handler.RequestDisconnectGoogleOAuthHandler)
-		// 	}
-		// 	internal := google.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
-		// 	{
-		// 		internal.POST("/login", handler.InternalGoogleLoginHandler)
-		// 	}
-		// }
+		google := r.Group("/google")
+		{
+			// public := google.Group("")
+			// {
+			// 	public.GET("/callback", handler.GoogleCallbackHandler)
+			// }
+			external := google.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
+			{
+				external.POST("/connect", handler.RequestConnectGoogleOAuthHandler)
+				external.POST("/disconnect", handler.RequestDisconnectGoogleOAuthHandler)
+			}
+			// internal := google.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
+			// {
+			// 	internal.POST("/login", handler.InternalGoogleLoginHandler)
+			// }
+		}
 
-		// line := r.Group("/line")
-		// {
-		// 	public := line.Group("")
-		// 	{
-		// 		public.GET("/callback", handler.LineCallbackHandler)
-		// 	}
-		// 	external := line.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
-		// 	{
-		// 		external.POST("/connect", handler.RequestConnectLineOAuthHandler)
-		// 		external.POST("/disconnect", handler.RequestDisconnectLineOAuthHandler)
-		// 	}
-		// 	internal := line.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
-		// 	{
-		// 		internal.POST("/login", handler.InternalLineLoginHandler)
-		// 	}
-		// }
+		line := r.Group("/line")
+		{
+			// public := line.Group("")
+			// {
+			// 	public.GET("/callback", handler.LineCallbackHandler)
+			// }
+			external := line.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
+			{
+				external.POST("/connect", handler.RequestConnectLineOAuthHandler)
+				external.POST("/disconnect", handler.RequestDisconnectLineOAuthHandler)
+			}
+			// internal := line.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
+			// {
+			// 	internal.POST("/login", handler.InternalLineLoginHandler)
+			// }
+		}
 
 		r.POST("/email_verify", middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken, handler.RequestEmailVerifyHandler)
 
