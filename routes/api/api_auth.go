@@ -28,10 +28,10 @@ func InitAuthAPI(router *gin.RouterGroup) {
 				external.POST("/connect", handler.RequestConnectGoogleOAuthHandler)
 				external.POST("/disconnect", handler.RequestDisconnectGoogleOAuthHandler)
 			}
-			// internal := google.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
-			// {
-			// 	internal.POST("/login", handler.InternalGoogleLoginHandler)
-			// }
+			internal := google.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
+			{
+				internal.POST("/login", handler.InternalGoogleLoginHandler)
+			}
 		}
 
 		line := r.Group("/line")
@@ -45,10 +45,10 @@ func InitAuthAPI(router *gin.RouterGroup) {
 				external.POST("/connect", handler.RequestConnectLineOAuthHandler)
 				external.POST("/disconnect", handler.RequestDisconnectLineOAuthHandler)
 			}
-			// internal := line.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
-			// {
-			// 	internal.POST("/login", handler.InternalLineLoginHandler)
-			// }
+			internal := line.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
+			{
+				internal.POST("/login", handler.InternalLineLoginHandler)
+			}
 		}
 
 		r.POST("/email_verify", middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken, handler.RequestEmailVerifyHandler)

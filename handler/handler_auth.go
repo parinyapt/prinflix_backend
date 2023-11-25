@@ -308,3 +308,185 @@ func RevokeTokenHandler(c *gin.Context) {
 		Data:         "Revoke Token Success",
 	})
 }
+
+func InternalGoogleLoginHandler(c *gin.Context) {
+	var request modelHandler.RequestInternalOAuthLogin
+	var response modelHandler.ResponseAccessToken
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, errorFieldList, validatorError := PTGUvalidator.Validate(request)
+	if validatorError != nil {
+		logger.Error("[Handler][InternalGoogleLoginHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        errorFieldList,
+		})
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderGoogle, modelController.ParamCheckAccountOAuth{
+		UserID: request.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][InternalGoogleLoginHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if checkAccountOAuth.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusNotFound,
+			Error:        "Account OAuth Not Found or Not Connected",
+		})
+		return
+	}
+
+	clearAuthSessionErr := controllerInstance.DeleteAuthSessionByAccountUUID(checkAccountOAuth.AccountUUID.String())
+	if clearAuthSessionErr != nil {
+		logger.Error("[Handler][InternalGoogleLoginHandler()]->Error Clear Auth Session", logger.Field("error", clearAuthSessionErr.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	createAuthSession, err := controllerInstance.CreateAuthSession(checkAccountOAuth.AccountUUID.String())
+	if err != nil {
+		logger.Error("[Handler][InternalGoogleLoginHandler()]->Error Create Auth Session", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	generateAccessToken, err := controller.GenerateAccessToken(modelController.ParamGenerateAccessToken{
+		SessionUUID: createAuthSession.SessionUUID.String(),
+		ExpiredAt:   createAuthSession.ExpiredAt,
+	})
+	if err != nil {
+		logger.Error("[Handler][InternalGoogleLoginHandler()]->Error Generate Access Token", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	response.TokenType = generateAccessToken.TokenType
+	response.AccessToken = generateAccessToken.AccessToken
+	response.AccessTokenExpireIn = time.Duration(createAuthSession.ExtiredIn.Seconds())
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         response,
+	})
+}
+
+func InternalLineLoginHandler(c *gin.Context) {
+	var request modelHandler.RequestInternalOAuthLogin
+	var response modelHandler.ResponseAccessToken
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, errorFieldList, validatorError := PTGUvalidator.Validate(request)
+	if validatorError != nil {
+		logger.Error("[Handler][InternalLineLoginHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        errorFieldList,
+		})
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine, modelController.ParamCheckAccountOAuth{
+		UserID: request.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][InternalLineLoginHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if checkAccountOAuth.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusNotFound,
+			Error:        "Account OAuth Not Found or Not Connected",
+		})
+		return
+	}
+
+	clearAuthSessionErr := controllerInstance.DeleteAuthSessionByAccountUUID(checkAccountOAuth.AccountUUID.String())
+	if clearAuthSessionErr != nil {
+		logger.Error("[Handler][InternalLineLoginHandler()]->Error Clear Auth Session", logger.Field("error", clearAuthSessionErr.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	createAuthSession, err := controllerInstance.CreateAuthSession(checkAccountOAuth.AccountUUID.String())
+	if err != nil {
+		logger.Error("[Handler][InternalLineLoginHandler()]->Error Create Auth Session", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	generateAccessToken, err := controller.GenerateAccessToken(modelController.ParamGenerateAccessToken{
+		SessionUUID: createAuthSession.SessionUUID.String(),
+		ExpiredAt:   createAuthSession.ExpiredAt,
+	})
+	if err != nil {
+		logger.Error("[Handler][InternalLineLoginHandler()]->Error Generate Access Token", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	response.TokenType = generateAccessToken.TokenType
+	response.AccessToken = generateAccessToken.AccessToken
+	response.AccessTokenExpireIn = time.Duration(createAuthSession.ExtiredIn.Seconds())
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         response,
+	})
+}
