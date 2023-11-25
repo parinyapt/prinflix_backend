@@ -56,6 +56,7 @@ type AccountOAuth struct {
 	AccountUUID uuid.UUID `gorm:"column:account_oauth_account_uuid;primary_key;not null"`
 	Provider    string    `gorm:"column:account_oauth_provider;primary_key;type:enum('line', 'google');not null"`
 	UserID      string    `gorm:"column:account_oauth_user_id;not null"`
+	UserName    string    `gorm:"column:account_oauth_user_name;not null"`
 	UserEmail   string    `gorm:"column:account_oauth_user_email;not null"`
 	UserPicture string    `gorm:"column:account_oauth_user_picture;not null"`
 	CreatedAt   time.Time `gorm:"column:account_oauth_created_at;not null"`

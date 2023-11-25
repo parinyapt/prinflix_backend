@@ -9,6 +9,7 @@ type ParamCreateAccountOAuth struct {
 	AccountUUID uuid.UUID
 	Provider    string
 	UserID      string
+	UserName    string
 	UserEmail   string
 	UserPicture string
 }
@@ -30,7 +31,7 @@ type ResultFetchOneAccountOAuth struct {
 
 type ResultFetchManyAccountOAuth struct {
 	IsFound bool
-	Data []modelDatabase.AccountOAuth
+	Data    []modelDatabase.AccountOAuth
 }
 
 type ParamDeleteAccountOAuthByProviderAndAccountUUID struct {

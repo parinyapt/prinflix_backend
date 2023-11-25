@@ -21,6 +21,7 @@ func (receiver ControllerReceiverArgument) CreateAccountOAuth(param modelControl
 		AccountUUID: accountUUIDparse,
 		Provider:    param.Provider,
 		UserID:      param.UserID,
+		UserName:    param.UserName,
 		UserEmail:   param.UserEmail,
 		UserPicture: param.UserPicture,
 	})
@@ -64,6 +65,9 @@ func (receiver ControllerReceiverArgument) CheckAccountOAuth(provider string, pa
 	}
 
 	returnData.AccountUUID = repoData.Data.AccountUUID
+	returnData.Name = repoData.Data.UserName
+	returnData.Email = repoData.Data.UserEmail
+	returnData.Picture = repoData.Data.UserPicture
 
 	return returnData, nil
 }

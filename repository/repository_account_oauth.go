@@ -12,6 +12,7 @@ func (receiver RepositoryReceiverArgument) CreateAccountOAuth(param modelReposit
 		AccountUUID: param.AccountUUID,
 		Provider:    param.Provider,
 		UserID:      param.UserID,
+		UserName:    param.UserName,
 		UserEmail:   param.UserEmail,
 		UserPicture: param.UserPicture,
 	})
@@ -24,8 +25,8 @@ func (receiver RepositoryReceiverArgument) CreateAccountOAuth(param modelReposit
 
 func (receiver RepositoryReceiverArgument) FetchOneAccountOAuthByProviderAndUserID(param modelRepository.ParamFetchOneAccountOAuthByProviderAndUserID) (result modelRepository.ResultFetchOneAccountOAuth, err error) {
 	resultDB := receiver.databaseTX.Where(&modelDatabase.AccountOAuth{
-		Provider:    param.Provider,
-		UserID:      param.UserID,
+		Provider: param.Provider,
+		UserID:   param.UserID,
 	}).Limit(1).Find(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchOneAccountOAuthByProviderAndUserID()]->"+errorDatabaseQueryFailed)
