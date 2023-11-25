@@ -15,6 +15,7 @@ func configApiRoutes(router *gin.Engine) {
 	v1 := router.Group("/v1")
 	{
 		APIroutes.InitAuthAPI(v1)
+		APIroutes.InitAccountAPI(v1)
 
 	}
 }
