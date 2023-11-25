@@ -88,7 +88,7 @@ func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.
 	return returnData, nil
 }
 
-func (receiver ControllerReceiverArgument) UpdateAccount(accountUUID string, param modelController.ParamUpdateAccount) (returnData modelController.ReturnUpdateAccount, err error) {
+func (receiver ControllerReceiverArgument) UpdateAccount(accountUUID string, param modelController.ParamUpdateAccount) (returnData modelController.ReturnIsNotFoundOnly, err error) {
 	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(accountUUID)
 	if err != nil {
 		return returnData, errors.Wrap(err, "[Controller][UpdateAccount()]->Fail to parse account uuid")

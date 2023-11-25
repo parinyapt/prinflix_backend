@@ -37,7 +37,3 @@ type ParamUpdateAccount struct {
 	Password      string
 	Image         bool
 }
-
-type ReturnUpdateAccount struct {
-	IsNotFound bool
-}
