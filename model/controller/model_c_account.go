@@ -31,7 +31,6 @@ type ReturnGetAccountInfo struct {
 }
 
 type ParamUpdateAccount struct {
-	AccountUUID   string
 	Name          string
 	EmailVerified bool
 	Password      string
