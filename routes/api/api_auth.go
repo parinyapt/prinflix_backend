@@ -25,8 +25,10 @@ func InitAuthAPI(router *gin.RouterGroup) {
 			}
 			external := google.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
 			{
-				external.POST("/connect", handler.RequestConnectGoogleOAuthHandler)
-				external.POST("/disconnect", handler.RequestDisconnectGoogleOAuthHandler)
+				middlewareUser := middleware.NewMiddleware(middleware.MiddlewareReceiverArgument{})
+				user := external.Use(middlewareUser.CheckAccount)
+				user.POST("/connect", handler.RequestConnectGoogleOAuthHandler)
+				user.POST("/disconnect", handler.RequestDisconnectGoogleOAuthHandler)
 			}
 			internal := google.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
 			{
@@ -42,8 +44,10 @@ func InitAuthAPI(router *gin.RouterGroup) {
 			}
 			external := line.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
 			{
-				external.POST("/connect", handler.RequestConnectLineOAuthHandler)
-				external.POST("/disconnect", handler.RequestDisconnectLineOAuthHandler)
+				middlewareUser := middleware.NewMiddleware(middleware.MiddlewareReceiverArgument{})
+				user := external.Use(middlewareUser.CheckAccount)
+				user.POST("/connect", handler.RequestConnectLineOAuthHandler)
+				user.POST("/disconnect", handler.RequestDisconnectLineOAuthHandler)
 			}
 			internal := line.Group("").Use(middleware.GetHeaderAPIKey, middleware.AuthWithAPIKey)
 			{
