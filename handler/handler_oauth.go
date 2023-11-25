@@ -21,7 +21,25 @@ func RequestConnectGoogleOAuthHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	err := controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderGoogle ,modelController.ParamCheckAccountOAuth{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+	})
+	if err != nil {
+		logger.Error("[Handler][RequestConnectGoogleOAuthHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !checkAccountOAuth.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error: 			"Google OAuth Already Connected",
+		})
+		return
+	}
+
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		Type:        modelDatabase.TemporaryCodeTypeOAuthStateGoogle,
 	})
@@ -95,7 +113,25 @@ func RequestConnectLineOAuthHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	err := controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine ,modelController.ParamCheckAccountOAuth{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+	})
+	if err != nil {
+		logger.Error("[Handler][RequestConnectLineOAuthHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !checkAccountOAuth.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error: 			"Line OAuth Already Connected",
+		})
+		return
+	}
+
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		Type:        modelDatabase.TemporaryCodeTypeOAuthStateLine,
 	})
