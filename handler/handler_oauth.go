@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	PTGUvalidator "github.com/parinyapt/golang_utils/validator/v1"
@@ -13,7 +12,7 @@ import (
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelHandler "github.com/parinyapt/prinflix_backend/model/handler"
 	modelUtils "github.com/parinyapt/prinflix_backend/model/utils"
-	utilsConfigFile "github.com/parinyapt/prinflix_backend/utils/config_file"
+	utilsRedirect "github.com/parinyapt/prinflix_backend/utils/redirect"
 	utilsResponse "github.com/parinyapt/prinflix_backend/utils/response"
 )
 
@@ -24,7 +23,7 @@ func RequestConnectGoogleOAuthHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderGoogle ,modelController.ParamCheckAccountOAuth{
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderGoogle, modelController.ParamCheckAccountOAuth{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 	})
 	if err != nil {
@@ -37,7 +36,7 @@ func RequestConnectGoogleOAuthHandler(c *gin.Context) {
 	if !checkAccountOAuth.IsNotFound {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
-			Error: 			"Google OAuth Already Connected",
+			Error:        "Google OAuth Already Connected",
 		})
 		return
 	}
@@ -83,7 +82,7 @@ func RequestDisconnectGoogleOAuthHandler(c *gin.Context) {
 
 	deleteOAuthAccount, err := controllerInstance.DeleteAccountOAuth(modelController.ParamDeleteAccountOAuth{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
-		Provider:        modelDatabase.AccountOAuthProviderGoogle,
+		Provider:    modelDatabase.AccountOAuthProviderGoogle,
 	})
 	if err != nil {
 		logger.Error("[Handler][RequestDisconnectGoogleOAuthHandler()]->Error DeleteAccountOAuth()", logger.Field("error", err.Error()))
@@ -96,7 +95,7 @@ func RequestDisconnectGoogleOAuthHandler(c *gin.Context) {
 	if deleteOAuthAccount.IsNotFound {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusNotFound,
-			Error: 			"Google OAuth Not Connected",
+			Error:        "Google OAuth Not Connected",
 		})
 		return
 	}
@@ -105,7 +104,7 @@ func RequestDisconnectGoogleOAuthHandler(c *gin.Context) {
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
-		Data: 			 "Google OAuth Disconnected",
+		Data:         "Google OAuth Disconnected",
 	})
 }
 
@@ -116,7 +115,7 @@ func RequestConnectLineOAuthHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine ,modelController.ParamCheckAccountOAuth{
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine, modelController.ParamCheckAccountOAuth{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 	})
 	if err != nil {
@@ -129,7 +128,7 @@ func RequestConnectLineOAuthHandler(c *gin.Context) {
 	if !checkAccountOAuth.IsNotFound {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
-			Error: 			"Line OAuth Already Connected",
+			Error:        "Line OAuth Already Connected",
 		})
 		return
 	}
@@ -175,7 +174,7 @@ func RequestDisconnectLineOAuthHandler(c *gin.Context) {
 
 	deleteOAuthAccount, err := controllerInstance.DeleteAccountOAuth(modelController.ParamDeleteAccountOAuth{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
-		Provider:        modelDatabase.AccountOAuthProviderLine,
+		Provider:    modelDatabase.AccountOAuthProviderLine,
 	})
 	if err != nil {
 		logger.Error("[Handler][RequestDisconnectLineOAuthHandler()]->Error DeleteAccountOAuth()", logger.Field("error", err.Error()))
@@ -188,7 +187,7 @@ func RequestDisconnectLineOAuthHandler(c *gin.Context) {
 	if deleteOAuthAccount.IsNotFound {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusNotFound,
-			Error: 			"Line OAuth Not Connected",
+			Error:        "Line OAuth Not Connected",
 		})
 		return
 	}
@@ -197,7 +196,7 @@ func RequestDisconnectLineOAuthHandler(c *gin.Context) {
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
-		Data: 			 "Line OAuth Disconnected",
+		Data:         "Line OAuth Disconnected",
 	})
 }
 
@@ -230,11 +229,11 @@ func GoogleCallbackHandler(c *gin.Context) {
 	})
 	if err != nil {
 		logger.Error("[Handler][GoogleCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
-		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
 	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
-		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
 
@@ -244,14 +243,14 @@ func GoogleCallbackHandler(c *gin.Context) {
 	})
 	if err != nil {
 		logger.Error("[Handler][GoogleCallbackHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
-		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
 
 	getGoogleOAuthUserInfo, err := controller.GetGoogleOAuthUserInfo(queryParam.Code)
 	if err != nil {
 		logger.Error("[Handler][GoogleCallbackHandler()]->Error GetGoogleOAuthUserInfo()", logger.Field("error", err.Error()))
-		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
 
@@ -264,13 +263,83 @@ func GoogleCallbackHandler(c *gin.Context) {
 	})
 	if err != nil {
 		logger.Error("[Handler][GoogleCallbackHandler()]->Error CreateAccountOAuth()", logger.Field("error", err.Error()))
-		c.Redirect(http.StatusFound, utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
 
 	databaseTx.Commit()
 
-	redirecturl := strings.Replace(utilsConfigFile.GetFrontendBaseURL()+utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthSuccessPagePath), ":provider", "Google", -1)
-	
-	c.Redirect(http.StatusFound, redirecturl)
+	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, true))
+}
+
+func LineCallbackHandler(c *gin.Context) {
+	var queryParam modelHandler.QueryParamOAuthCallback
+
+	if err := c.ShouldBind(&queryParam); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Handler][LineCallbackHandler()]->Error Validate()", logger.Field("error", validatorError.Error()))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !isValidatePass {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	checkTemporaryCode, err := controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
+		CodeUUID: queryParam.State,
+		Type:     modelDatabase.TemporaryCodeTypeOAuthStateLine,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		return
+	}
+	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		return
+	}
+
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: checkTemporaryCode.AccountUUID.String(),
+		Type:        modelDatabase.TemporaryCodeTypeOAuthStateLine,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		return
+	}
+
+	getLineOAuthUserInfo, err := controller.GetLineOAuthUserInfo(queryParam.Code)
+	if err != nil {
+		logger.Error("[Handler][LineCallbackHandler()]->Error GetLineOAuthUserInfo()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		return
+	}
+
+	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
+		AccountUUID: checkTemporaryCode.AccountUUID.String(),
+		Provider:    modelDatabase.AccountOAuthProviderLine,
+		UserID:      getLineOAuthUserInfo.UserID,
+		UserEmail:   getLineOAuthUserInfo.Email,
+		UserPicture: getLineOAuthUserInfo.Picture,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackHandler()]->Error CreateAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		return
+	}
+
+	databaseTx.Commit()
+
+	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, true))
 }

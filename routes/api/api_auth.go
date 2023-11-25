@@ -36,10 +36,10 @@ func InitAuthAPI(router *gin.RouterGroup) {
 
 		line := r.Group("/line")
 		{
-			// public := line.Group("")
-			// {
-			// 	public.GET("/callback", handler.LineCallbackHandler)
-			// }
+			public := line.Group("")
+			{
+				public.GET("/callback", handler.LineCallbackHandler)
+			}
 			external := line.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
 			{
 				external.POST("/connect", handler.RequestConnectLineOAuthHandler)
