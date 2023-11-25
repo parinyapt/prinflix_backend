@@ -28,6 +28,7 @@ type ReturnGetAccountInfo struct {
 	Status        string
 	Image         bool
 	Role          string
+	PasswordHash  string
 }
 
 type ParamUpdateAccount struct {

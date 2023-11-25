@@ -84,6 +84,7 @@ func (receiver ControllerReceiverArgument) GetAccountInfo(param modelController.
 	returnData.Status = repoData.Data.Status
 	returnData.Image = repoData.Data.Image
 	returnData.Role = repoData.Data.Role
+	returnData.PasswordHash = repoData.Data.Password
 
 	return returnData, nil
 }
