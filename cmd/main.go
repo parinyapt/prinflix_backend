@@ -7,6 +7,7 @@ import (
 	"github.com/parinyapt/prinflix_backend/database"
 	"github.com/parinyapt/prinflix_backend/logger"
 	"github.com/parinyapt/prinflix_backend/routes"
+	"github.com/parinyapt/prinflix_backend/storage"
 )
 
 func main() {
@@ -15,5 +16,6 @@ func main() {
 	logger.InitializeLogger(os.Getenv("DEPLOY_MODE"))
 	config.InitializeConfig()
 	database.InitializeDatabase()
+	storage.InitializeStorage()
 	routes.InitializeRoutes()
 }
