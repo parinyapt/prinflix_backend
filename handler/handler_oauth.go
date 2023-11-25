@@ -258,6 +258,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 		AccountUUID: checkTemporaryCode.AccountUUID.String(),
 		Provider:    modelDatabase.AccountOAuthProviderGoogle,
 		UserID:      getGoogleOAuthUserInfo.UserID,
+		UserName:    getGoogleOAuthUserInfo.Name,
 		UserEmail:   getGoogleOAuthUserInfo.Email,
 		UserPicture: getGoogleOAuthUserInfo.Picture,
 	})
@@ -330,6 +331,7 @@ func LineCallbackHandler(c *gin.Context) {
 		AccountUUID: checkTemporaryCode.AccountUUID.String(),
 		Provider:    modelDatabase.AccountOAuthProviderLine,
 		UserID:      getLineOAuthUserInfo.UserID,
+		UserName:    getLineOAuthUserInfo.Name,
 		UserEmail:   getLineOAuthUserInfo.Email,
 		UserPicture: getLineOAuthUserInfo.Picture,
 	})

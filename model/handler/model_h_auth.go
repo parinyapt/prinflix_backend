@@ -20,13 +20,27 @@ type ResponseAccessToken struct {
 }
 
 type ResponseVerifyToken struct {
-	Name          string `json:"name"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	ImageStatus   bool   `json:"have_image"`
-	ImageURL      string `json:"image_url"`
-	Status        string `json:"status"`
-	Role          string `json:"role"`
+	Name          string                   `json:"name"`
+	Email         string                   `json:"email"`
+	EmailVerified bool                     `json:"email_verified"`
+	ImageStatus   bool                     `json:"have_image"`
+	ImageURL      string                   `json:"image_url"`
+	Status        string                   `json:"status"`
+	Role          string                   `json:"role"`
+	OAuth         ResponseVerifyTokenOAuth `json:"oauth"`
+}
+
+type ResponseVerifyTokenOAuth struct {
+	Google struct {
+		IsConnected bool   `json:"connected"`
+		Name        string `json:"name,omitempty"`
+		Picture     string `json:"picture,omitempty"`
+	} `json:"google"`
+	Line struct {
+		IsConnected bool   `json:"connected"`
+		Name        string `json:"name,omitempty"`
+		Picture     string `json:"picture,omitempty"`
+	} `json:"line"`
 }
 
 type RequestInternalOAuthLogin struct {

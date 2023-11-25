@@ -225,6 +225,38 @@ func VerifyTokenHandler(c *gin.Context) {
 		return
 	}
 
+	googleAccountOauth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderGoogle, modelController.ParamCheckAccountOAuth{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+	})
+	if err != nil {
+		logger.Error("[Handler][VerifyTokenHandler()]->Error CheckAccountOAuth() - Google", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !googleAccountOauth.IsNotFound {
+		response.OAuth.Google.IsConnected = true
+		response.OAuth.Google.Name = googleAccountOauth.Name
+		response.OAuth.Google.Picture = googleAccountOauth.Picture
+	}
+
+	lineAccountOauth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine, modelController.ParamCheckAccountOAuth{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+	})
+	if err != nil {
+		logger.Error("[Handler][VerifyTokenHandler()]->Error CheckAccountOAuth() - Line", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !lineAccountOauth.IsNotFound {
+		response.OAuth.Line.IsConnected = true
+		response.OAuth.Line.Name = lineAccountOauth.Name
+		response.OAuth.Line.Picture = lineAccountOauth.Picture
+	}
+
 	response.Name = accountInfo.Name
 	response.Email = accountInfo.Email
 	response.EmailVerified = accountInfo.EmailVerified
