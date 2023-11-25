@@ -1,5 +1,5 @@
 {
-  "domain": ["http://localhost"],
+  "domain": ["http://localhost", "http://localhost:9999"],
   "base_url": "http://localhost:4000",
   "path": {
     "connect_oauth": {
