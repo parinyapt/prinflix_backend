@@ -12,10 +12,19 @@ func configApiRoutes(router *gin.Engine) {
 	// Health Check
 	router.GET("healthz", handler.HealthCheckHandler)
 
+	storage := router.Group("/storage")
+	{
+		v1 := storage.Group("/v1")
+		{
+			APIroutes.InitStorageAPI(v1)
+		}
+	}
+
 	v1 := router.Group("/v1")
 	{
 		APIroutes.InitAuthAPI(v1)
 		APIroutes.InitAccountAPI(v1)
+		// APIroutes.InitMovieAPI(v1)
 
 	}
 }
