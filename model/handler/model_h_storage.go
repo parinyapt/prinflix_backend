@@ -4,3 +4,7 @@ type UriParamGetMovieVideoFile struct {
 	MovieUUID string `uri:"movie_uuid" validate:"required,uuid"`
 	FilePath  string `uri:"file_path" validate:"required,max=500"`
 }
+
+type UriParamGetMovieThumbnail struct {
+	MovieUUID string `uri:"movie_uuid" validate:"required,uuid"`
+}

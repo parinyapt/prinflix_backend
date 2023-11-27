@@ -11,3 +11,7 @@ type ParamGetMovieVideoFile struct {
 	MovieUUID string
 	FilePath  string
 }
+
+type ParamGetMovieThumbnail struct {
+	MovieUUID string
+}

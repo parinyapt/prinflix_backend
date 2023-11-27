@@ -19,11 +19,11 @@ type ObjectPath string
 
 const (
 	// Minio Storage Path
-	// ObjectNotFoundPath              ObjectPath = "global/object_not_found.jpg"
+	ObjectNotFoundPath ObjectPath = "global/object_not_found.jpg"
 	// AccountProfileImageNotfoundPath ObjectPath = "global/profile_no_image.jpg"
 
 	// AccountProfileImagePath ObjectPath = "account/:account_uuid/profile.jpg"
-	// MovieThumbnailPath      ObjectPath = "movie/:movie_uuid/image/thumbnail.jpg"
+	MovieThumbnailPath ObjectPath = "movie/:movie_uuid/image/thumbnail.jpg"
 	MovieVideoFilePath ObjectPath = "movie/:movie_uuid/video/:file_path"
 )
 
@@ -31,7 +31,7 @@ type RoutePath string
 
 const (
 	// AccountProfileImageRoutePath RoutePath = "/profile/:account_uuid_encrypt"
-	MovieThumbnailRoutePath      RoutePath = "/movie/:movie_uuid/thumbnail"
+	MovieThumbnailRoutePath RoutePath = "/movie/:movie_uuid/thumbnail"
 	MovieVideoFileRoutePath RoutePath = "/movie/:movie_uuid/video/*file_path"
 )
 

@@ -8,4 +8,5 @@ import (
 
 func InitStorageAPI(router *gin.RouterGroup) {
 	router.GET(string(storage.MovieVideoFileRoutePath), handler.GetMovieVideoFileHandler)
+	router.GET(string(storage.MovieThumbnailRoutePath), handler.GetMovieThumbnailHandler)
 }

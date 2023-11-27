@@ -31,3 +31,41 @@ func GetMovieVideoFile(param modelController.ParamGetMovieVideoFile) (returnData
 
 	return returnData, nil
 }
+
+func GetMovieThumbnail(param modelController.ParamGetMovieThumbnail) (returnData modelController.ReturnObjectDetail, err error) {
+	object, err := storage.MinioClient.GetObject(context.Background(), os.Getenv("OBJECT_STORAGE_BUCKET_NAME"),
+		storage.GenerateObjectPath(storage.MovieThumbnailPath, map[string]string{
+			"movie_uuid": param.MovieUUID,
+		}),
+		minio.GetObjectOptions{},
+	)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Storage][GetMovieThumbnail()]->Fail to get object from minio")
+	}
+
+	returnData.Object = object
+	returnData.Stat, err = object.Stat()
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Storage][GetMovieThumbnail()]->Fail to get object stat")
+	}
+
+	return returnData, nil
+}
+
+func GetObjectNotFound() (returnData modelController.ReturnObjectDetail, err error) {
+	object, err := storage.MinioClient.GetObject(context.Background(), os.Getenv("OBJECT_STORAGE_BUCKET_NAME"),
+		storage.GenerateObjectPath(storage.ObjectNotFoundPath, map[string]string{}),
+		minio.GetObjectOptions{},
+	)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Storage][GetObjectNotFound()]->Fail to get object from minio")
+	}
+
+	returnData.Object = object
+	returnData.Stat, err = object.Stat()
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Storage][GetObjectNotFound()]->Fail to get object stat")
+	}
+
+	return returnData, err
+}
