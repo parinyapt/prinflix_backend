@@ -31,7 +31,7 @@ type RoutePath string
 
 const (
 	// AccountProfileImageRoutePath RoutePath = "/profile/:account_uuid_encrypt"
-	// MovieThumbnailRoutePath      RoutePath = "/movie/:movie_uuid/thumbnail"
+	MovieThumbnailRoutePath      RoutePath = "/movie/:movie_uuid/thumbnail"
 	MovieVideoFileRoutePath RoutePath = "/movie/:movie_uuid/video/*file_path"
 )
 
