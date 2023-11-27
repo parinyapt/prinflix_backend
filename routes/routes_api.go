@@ -24,7 +24,7 @@ func configApiRoutes(router *gin.Engine) {
 	{
 		APIroutes.InitAuthAPI(v1)
 		APIroutes.InitAccountAPI(v1)
-		// APIroutes.InitMovieAPI(v1)
+		APIroutes.InitMovieAPI(v1)
 
 	}
 }
