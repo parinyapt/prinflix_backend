@@ -34,3 +34,20 @@ type ReturnGetManyMovieData struct {
 	MovieCategoryName string
 	IsFavorite        bool
 }
+
+type ReturnGetMovieDetail struct {
+	IsNotFound bool
+
+	MovieUUID         uuid.UUID
+	MovieThumbnail    string
+	MovieTitle        string
+	MovieDescription  string
+	MovieCategoryID   uint
+	MovieCategoryName string
+	IsFavorite        bool
+}
+
+type ParamGetMovieDetail struct {
+	AccountUUID string
+	MovieUUID   string
+}

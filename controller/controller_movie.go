@@ -83,3 +83,43 @@ func (receiver ControllerReceiverArgument) GetAllMovie(param modelController.Par
 
 	return returnData, nil
 }
+
+func (receiver ControllerReceiverArgument) GetMovieDetail(param modelController.ParamGetMovieDetail) (returnData modelController.ReturnGetMovieDetail, err error) {
+	movieUUIDparse, err := utilsUUID.ParseUUIDfromString(param.MovieUUID)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][GetMovieDetail()]->Fail to parse movie uuid")
+	}
+
+	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(param.AccountUUID)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][GetMovieDetail()]->Fail to parse account uuid")
+	}
+
+	repoInstance := repository.NewRepository(receiver.databaseTX)
+
+	repoData, repoErr := repoInstance.FetchOneMovie(modelRepository.ParamFetchOneMovie{
+		MovieUUID:   movieUUIDparse,
+		AccountUUID: accountUUIDparse,
+	})
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][GetMovieDetail()]->Fail to fetch one movie")
+	}
+	if !repoData.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
+
+	returnData.MovieUUID = repoData.Data.MovieUUID
+	returnData.MovieTitle = repoData.Data.MovieTitle
+	returnData.MovieDescription = repoData.Data.MovieDescription
+	returnData.MovieCategoryID = repoData.Data.MovieCategoryID
+	returnData.MovieCategoryName = repoData.Data.MovieCategoryName
+	returnData.MovieThumbnail, err = storage.GenerateRoutePath(1, storage.MovieThumbnailRoutePath, map[string]string{
+		"movie_uuid": repoData.Data.MovieUUID.String(),
+	})
+	if err != nil {
+		returnData.MovieThumbnail = ""
+	}
+
+	return returnData, nil
+}
