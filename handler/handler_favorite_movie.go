@@ -178,10 +178,10 @@ func GetFavoriteMovieListHandler(c *gin.Context) {
 		return
 	}
 
-	var response []modelHandler.ResponseMovieData
+	var response modelHandler.ResponseGetFavoriteMovieList
 
 	for _, movie := range getAllFavoriteMovie.Data {
-		response = append(response, modelHandler.ResponseMovieData{
+		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
 			MovieUUID:         movie.MovieUUID,
 			MovieThumbnail:    movie.MovieThumbnail,
 			MovieTitle:        movie.MovieTitle,
