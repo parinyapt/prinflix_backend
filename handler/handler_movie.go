@@ -153,7 +153,7 @@ func GetMovieDetailHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	getMovieDetail, err := controllerInstance.GetMovieDetail(modelController.ParamGetMovieDetail{
+	getMovieDetail, err := controllerInstance.GetMovieDetail(modelController.ParamAccountUUIDandMovieUUID{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		MovieUUID:   uriParam.MovieUUID,
 	})
