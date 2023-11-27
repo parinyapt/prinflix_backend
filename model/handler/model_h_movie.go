@@ -15,10 +15,10 @@ type QueryParamGetMovieList struct {
 
 type ResponseGetMovieList struct {
 	ResultPagination ResponsePagination         `json:"result_detail"`
-	ResultData       []ResponseGetMovieListData `json:"result_data"`
+	ResultData       []ResponseMovieData `json:"result_data"`
 }
 
-type ResponseGetMovieListData struct {
+type ResponseMovieData struct {
 	MovieUUID         uuid.UUID `json:"uuid"`
 	MovieThumbnail    string    `json:"thumbnail"`
 	MovieTitle        string    `json:"title"`
@@ -26,4 +26,8 @@ type ResponseGetMovieListData struct {
 	MovieCategoryID   uint      `json:"category_id"`
 	MovieCategoryName string    `json:"category_name"`
 	IsFavorite        bool      `json:"is_favorite"`
+}
+
+type UriParamGetMovieDetail struct {
+	MovieUUID string `uri:"movie_uuid" binding:"required,uuid"`
 }

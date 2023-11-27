@@ -90,7 +90,7 @@ func GetMovieListHandler(c *gin.Context) {
 	response.ResultPagination.CurrentLimit = getManyMovie.Pagination.Limit
 
 	for _, movie := range getManyMovie.Data {
-		response.ResultData = append(response.ResultData, modelHandler.ResponseGetMovieListData{
+		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
 			MovieUUID:         movie.MovieUUID,
 			MovieThumbnail:    movie.MovieThumbnail,
 			MovieTitle:        movie.MovieTitle,
@@ -104,6 +104,70 @@ func GetMovieListHandler(c *gin.Context) {
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
 		Error:        response,
+	})
+}
+
+func GetMovieDetailHandler(c *gin.Context) {
+	var uriParam modelHandler.UriParamGetMovieDetail
+
+	if err := c.ShouldBindUri(&uriParam); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(uriParam)
+	if validatorError != nil {
+		logger.Error("[Handler][GetMovieDetailHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        "Invalid Parameter",
+		})
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	getMovieDetail, err := controllerInstance.GetMovieDetail(modelController.ParamGetMovieDetail{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+		MovieUUID:   uriParam.MovieUUID,
+	})
+	if err != nil {
+		logger.Error("[Handler][GetMovieDetailHandler()]->Error GetMovieDetail()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if getMovieDetail.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusNotFound,
+			Error:        "Movie Not Found",
+		})
+		return
+	}
+
+	var response modelHandler.ResponseMovieData
+	response.MovieUUID = getMovieDetail.MovieUUID
+	response.MovieThumbnail = getMovieDetail.MovieThumbnail
+	response.MovieTitle = getMovieDetail.MovieTitle
+	response.MovieDescription = getMovieDetail.MovieDescription
+	response.MovieCategoryID = getMovieDetail.MovieCategoryID
+	response.MovieCategoryName = getMovieDetail.MovieCategoryName
+	response.IsFavorite = getMovieDetail.IsFavorite
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         response,
 	})
 }
 
