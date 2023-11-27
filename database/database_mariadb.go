@@ -55,6 +55,8 @@ func initializeConnectMariaDB() {
 		modelDatabase.MovieCategory{},
 		modelDatabase.Movie{},
 		modelDatabase.FavoriteMovie{},
+		modelDatabase.WatchSession{},
+		modelDatabase.WatchHistory{},
 	)
 	if err != nil {
 		logger.Fatal("Failed to AutoMigrate database", logger.Field("error", err))
