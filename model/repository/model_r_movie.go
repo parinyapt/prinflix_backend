@@ -2,12 +2,16 @@ package modelRepository
 
 import (
 	"github.com/google/uuid"
-	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 )
+
+type ParamFetchOneMovie struct {
+	AccountUUID uuid.UUID
+	MovieUUID   uuid.UUID
+}
 
 type ResultFetchOneMovie struct {
 	IsFound bool
-	Data    *modelDatabase.Movie
+	Data    DBResultFetchMovie
 }
 
 type ParamFetchManyMovie struct {
@@ -18,11 +22,11 @@ type ParamFetchManyMovie struct {
 
 type ResultFetchManyMovie struct {
 	IsFound    bool
-	Data       []DBResultFetchManyMovie
+	Data       []DBResultFetchMovie
 	Pagination ResultPagination
 }
 
-type DBResultFetchManyMovie struct {
+type DBResultFetchMovie struct {
 	MovieUUID         uuid.UUID
 	MovieTitle        string
 	MovieDescription  string

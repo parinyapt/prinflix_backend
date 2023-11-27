@@ -12,10 +12,46 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (receiver RepositoryReceiverArgument) FetchOneMovie(movieUUID uuid.UUID) (result modelRepository.ResultFetchOneMovie, err error) {
-	resultDB := receiver.databaseTX.Where(&modelDatabase.Movie{UUID: movieUUID}).Limit(1).Find(&result.Data)
+func (receiver RepositoryReceiverArgument) FetchOneMovie(param modelRepository.ParamFetchOneMovie) (result modelRepository.ResultFetchOneMovie, err error) {
+	sqlCommand := `SELECT
+		movie_uuid,
+		movie_title,
+		movie_description,
+		movie_category_id,
+		movie_category AS movie_category_name,
+		CASE
+			WHEN favorite_movie_created_at is not NULL THEN true
+			ELSE false
+		END AS is_favorite
+	FROM
+		@table_movie
+	INNER JOIN @table_movie_category ON movie_movie_category_id = movie_category_id
+	LEFT JOIN(
+		SELECT
+			favorite_movie_movie_uuid
+		FROM
+			@table_favorite_movie
+		WHERE
+			favorite_movie_account_uuid = @account_uuid
+	) tt ON movie_uuid = tt.favorite_movie_movie_uuid
+	LEFT JOIN @table_favorite_movie ON tt.favorite_movie_movie_uuid = @table_favorite_movie.favorite_movie_movie_uuid
+	WHERE
+	(
+		@table_favorite_movie.favorite_movie_account_uuid = @account_uuid
+		OR 
+		@table_favorite_movie.favorite_movie_account_uuid IS NULL
+	) AND movie_uuid = @movie_uuid;`
+	sqlCommand = PTGUdata.ReplaceString(sqlCommand, map[string]string{
+		"@table_movie":          utilsDatabase.GenerateTableName("movie"),
+		"@table_movie_category": utilsDatabase.GenerateTableName("movie_category"),
+		"@table_favorite_movie": utilsDatabase.GenerateTableName("favorite_movie"),
+	})
+	resultDB := receiver.databaseTX.Raw(sqlCommand, map[string]interface{}{
+		"account_uuid": param.AccountUUID,
+		"movie_uuid":   param.MovieUUID,
+	}).Scan(&result.Data)
 	if resultDB.Error != nil {
-		return result, errors.Wrap(resultDB.Error, "[Repository][FetchOneMovie()]->"+errorDatabaseQueryFailed)
+		return result, errors.Wrap(resultDB.Error, "[Repository][FetchManyMovie()]->"+errorDatabaseQueryFailed)
 	}
 	if resultDB.RowsAffected == 0 {
 		return result, nil
@@ -37,12 +73,12 @@ func (receiver RepositoryReceiverArgument) FetchManyMovie(accountUUID uuid.UUID,
 		if len(whereCondition) > 0 {
 			whereCondition += " AND "
 		}
-		whereCondition += "movie_movie_category_id = @category_id" 
+		whereCondition += "movie_movie_category_id = @category_id"
 	}
 
 	// Pagination calculation
 	receiver.databaseTX.Model(&modelDatabase.Movie{}).Where(whereCondition, map[string]interface{}{
-		"category_id": param.CategoryID,
+		"category_id":    param.CategoryID,
 		"search_keyword": "%" + param.SearchQuery + "%",
 	}).Count(&result.Pagination.TotalData)
 	if result.Pagination.TotalData == 0 {
@@ -93,18 +129,18 @@ func (receiver RepositoryReceiverArgument) FetchManyMovie(accountUUID uuid.UUID,
 	)
 	ORDER BY @sort_field @sort_order_by;`
 	sqlCommand = PTGUdata.ReplaceString(sqlCommand, map[string]string{
-		"@table_movie": utilsDatabase.GenerateTableName("movie"),
+		"@table_movie":          utilsDatabase.GenerateTableName("movie"),
 		"@table_movie_category": utilsDatabase.GenerateTableName("movie_category"),
 		"@table_favorite_movie": utilsDatabase.GenerateTableName("favorite_movie"),
-		"@sort_field": param.Pagination.SortField,
-		"@sort_order_by": param.Pagination.SortOrderBy,
-		"@limit": fmt.Sprintf("%d", param.Pagination.Limit),
-		"@offset": fmt.Sprintf("%d", (param.Pagination.Page * param.Pagination.Limit) - param.Pagination.Limit),
+		"@sort_field":           param.Pagination.SortField,
+		"@sort_order_by":        param.Pagination.SortOrderBy,
+		"@limit":                fmt.Sprintf("%d", param.Pagination.Limit),
+		"@offset":               fmt.Sprintf("%d", (param.Pagination.Page*param.Pagination.Limit)-param.Pagination.Limit),
 	})
 	resultDB := receiver.databaseTX.Raw(sqlCommand, map[string]interface{}{
-		"category_id": param.CategoryID,
+		"category_id":    param.CategoryID,
 		"search_keyword": "%" + param.SearchQuery + "%",
-		"account_uuid": accountUUID,
+		"account_uuid":   accountUUID,
 	}).Scan(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchManyMovie()]->"+errorDatabaseQueryFailed)
