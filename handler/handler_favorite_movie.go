@@ -162,6 +162,9 @@ func RemoveFavoriteMovieHandler(c *gin.Context) {
 func GetFavoriteMovieListHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(database.DB)
 
+	var response modelHandler.ResponseGetFavoriteMovieList
+	response.ResultData = []modelHandler.ResponseMovieData{}
+
 	getAllFavoriteMovie, err := controllerInstance.GetAllFavoriteMovie(c.GetString("ACCOUNT_UUID"))
 	if err != nil {
 		logger.Error("[Handler][GetFavoriteMovieListHandler()]->Error GetAllFavoriteMovie()", logger.Field("error", err.Error()))
@@ -173,12 +176,10 @@ func GetFavoriteMovieListHandler(c *gin.Context) {
 	if getAllFavoriteMovie.IsNotFound {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusOK,
-			Data:         []string{},
+			Data:         response,
 		})
 		return
 	}
-
-	var response modelHandler.ResponseGetFavoriteMovieList
 
 	for _, movie := range getAllFavoriteMovie.Data {
 		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
