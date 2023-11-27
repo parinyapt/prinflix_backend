@@ -13,5 +13,10 @@ func NewRepository(dbtx *gorm.DB) *RepositoryReceiverArgument {
 }
 
 const (
+	SortOrderByAsc  = "ASC"
+	SortOrderByDesc = "DESC"
+)
+
+const (
 	errorDatabaseQueryFailed = "Database query failed"
 )
