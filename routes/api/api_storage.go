@@ -8,9 +8,9 @@ import (
 )
 
 func InitStorageAPI(router *gin.RouterGroup) {
-	watchSessionProtect := router.Group("").Use(middleware.WatchSessionCheck)
-	{
-		watchSessionProtect.GET(string(storage.MovieVideoFileRoutePath), handler.GetMovieVideoFileHandler)
-	}
+	// watchSessionProtect := router.Group("").Use(middleware.WatchSessionCheck)
+	// {
+		router.GET(string(storage.MovieVideoFileRoutePath), handler.GetMovieVideoFileHandler)
+	// }
 	router.GET(string(storage.MovieThumbnailRoutePath), handler.GetMovieThumbnailHandler)
 }
