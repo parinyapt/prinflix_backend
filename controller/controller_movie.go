@@ -22,11 +22,29 @@ func (receiver ControllerReceiverArgument) GetAllMovieCategory() (returnData mod
 	}
 
 	for _, data := range repoData.Data {
-		returnData.Data = append(returnData.Data, modelController.ReturnGetAllMovieCategoryData{
+		returnData.Data = append(returnData.Data, modelController.ReturnGetMovieCategoryData{
 			CategoryID:   data.ID,
 			CategoryName: data.Name,
 		})
 	}
+
+	return returnData, nil
+}
+
+func (receiver ControllerReceiverArgument) GetMovieCategoryDetail(categoryID uint) (returnData modelController.ReturnGetMovieCategoryDetail, err error) {
+	repoInstance := repository.NewRepository(receiver.databaseTX)
+
+	repoData, repoErr := repoInstance.FetchOneMovieCategoryByID(categoryID)
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][GetMovieCategoryDetail()]->Fail to fetch one movie category by id")
+	}
+	if !repoData.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
+
+	returnData.Data.CategoryID = repoData.Data.ID
+	returnData.Data.CategoryName = repoData.Data.Name
 
 	return returnData, nil
 }

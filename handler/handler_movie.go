@@ -57,6 +57,22 @@ func GetMovieListHandler(c *gin.Context) {
 
 	controllerInstance := controller.NewController(database.DB)
 
+	getMovieCategoryDetail, err := controllerInstance.GetMovieCategoryDetail(queryParam.CategoryID)
+	if err != nil {
+		logger.Error("[Handler][GetMovieListHandler()]->Error GetMovieCategoryDetail()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if getMovieCategoryDetail.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusNotFound,
+			Error:        "Movie Category Not Found",
+		})
+		return
+	}
+
 	getManyMovie, err := controllerInstance.GetAllMovie(modelController.ParamGetAllMovie{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		CategoryID:  queryParam.CategoryID,

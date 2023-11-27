@@ -2,12 +2,17 @@ package modelController
 
 import "github.com/google/uuid"
 
-type ReturnGetAllMovieCategory struct {
+type ReturnGetMovieCategoryDetail struct {
 	IsNotFound bool
-	Data       []ReturnGetAllMovieCategoryData
+	Data       ReturnGetMovieCategoryData
 }
 
-type ReturnGetAllMovieCategoryData struct {
+type ReturnGetAllMovieCategory struct {
+	IsNotFound bool
+	Data       []ReturnGetMovieCategoryData
+}
+
+type ReturnGetMovieCategoryData struct {
 	CategoryID   uint   `json:"id"`
 	CategoryName string `json:"name"`
 }
