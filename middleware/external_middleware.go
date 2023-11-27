@@ -126,6 +126,7 @@ func WatchSessionCheck(c *gin.Context) {
 	if err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMW01",
 			Error:        "Invalid Session",
 		})
 		c.Abort()
@@ -136,6 +137,7 @@ func WatchSessionCheck(c *gin.Context) {
 		logger.Error("[Handler][RequestEndMovieHandler()]->Error ValidateWatchSessionToken()", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMW02",
 			Error:        "Invalid Session",
 		})
 		c.Abort()
@@ -144,6 +146,7 @@ func WatchSessionCheck(c *gin.Context) {
 	if tokenData.IsExpired {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMW03",
 			Error:        "Invalid Session",
 		})
 		c.Abort()
@@ -164,6 +167,7 @@ func WatchSessionCheck(c *gin.Context) {
 	if checkWatchSession.IsNotFound {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMW04",
 			Error:        "Invalid Session",
 		})
 		c.Abort()
