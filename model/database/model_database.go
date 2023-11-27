@@ -79,7 +79,7 @@ func (TemporaryCode) TableName() string {
 
 type Movie struct {
 	UUID        uuid.UUID `gorm:"column:movie_uuid;primary_key;not null"`
-	CategoryID  uint      `gorm:"column:movie_category_id;not null"`
+	CategoryID  uint      `gorm:"column:movie_movie_category_id;not null"`
 	Title       string    `gorm:"column:movie_title;not null"`
 	Description string    `gorm:"column:movie_description;not null"`
 	CreatedAt   time.Time `gorm:"column:movie_created_at;not null"`
