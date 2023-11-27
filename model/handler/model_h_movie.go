@@ -1,18 +1,29 @@
 package modelHandler
 
+import "github.com/google/uuid"
+
 type ResponseGetMovieCategoryList struct {
 	CategoryID   uint   `json:"id"`
 	CategoryName string `json:"name"`
 }
 
-type QueryParamPagination struct {
-	Page  int64  `form:"page" validate:"omitempty,min=1"`
-	Limit int64  `form:"limit" validate:"omitempty,min=1,max=100"`
-	Sort  string `form:"sort" validate:"omitempty,oneof=asc desc"`
+type QueryParamGetMovieList struct {
+	Keyword    string               `form:"keyword" validate:"omitempty,max=200"`
+	CategoryID uint                 `form:"category" validate:"omitempty,number"`
+	Pagination QueryParamPagination `form:"pagination"`
 }
 
-type QueryParamGetMovieList struct {
-	Keyword    string `form:"keyword" validate:"omitempty,max=200"`
-	Category   string `form:"category" validate:"omitempty,max=200"`
-	Pagination QueryParamPagination
+type ResponseGetMovieList struct {
+	ResultPagination ResponsePagination         `json:"result_detail"`
+	ResultData       []ResponseGetMovieListData `json:"result_data"`
+}
+
+type ResponseGetMovieListData struct {
+	MovieUUID         uuid.UUID `json:"uuid"`
+	MovieThumbnail    string    `json:"thumbnail"`
+	MovieTitle        string    `json:"title"`
+	MovieDescription  string    `json:"description"`
+	MovieCategoryID   uint      `json:"category_id"`
+	MovieCategoryName string    `json:"category_name"`
+	IsFavorite        bool      `json:"is_favorite"`
 }

@@ -12,7 +12,7 @@ func InitMovieAPI(router *gin.RouterGroup) {
 		middlewareUser := middleware.NewMiddleware(middleware.MiddlewareReceiverArgument{})
 		user := r.Use(middlewareUser.CheckAccount)
 		user.GET("category", handler.GetMovieCategoryListHandler)
-		// user.GET("", handler.GetMovieListHandler)
+		user.GET("", handler.GetMovieListHandler)
 		// user.GET("favorite", handler.GetFavoriteMovieListHandler)
 		// user.GET("watch", handler.GetWatchMovieListHandler)
 		// user.GET("/:movie_uuid", handler.GetMovieDetailHandler)
