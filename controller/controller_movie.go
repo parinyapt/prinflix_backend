@@ -102,7 +102,7 @@ func (receiver ControllerReceiverArgument) GetAllMovie(param modelController.Par
 	return returnData, nil
 }
 
-func (receiver ControllerReceiverArgument) GetMovieDetail(param modelController.ParamGetMovieDetail) (returnData modelController.ReturnGetMovieDetail, err error) {
+func (receiver ControllerReceiverArgument) GetMovieDetail(param modelController.ParamAccountUUIDandMovieUUID) (returnData modelController.ReturnGetMovieDetail, err error) {
 	movieUUIDparse, err := utilsUUID.ParseUUIDfromString(param.MovieUUID)
 	if err != nil {
 		return returnData, errors.Wrap(err, "[Controller][GetMovieDetail()]->Fail to parse movie uuid")

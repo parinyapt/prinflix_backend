@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (receiver ControllerReceiverArgument) CreateFavoriteMovie(param modelController.ParamFavoriteMovie) (err error) {
+func (receiver ControllerReceiverArgument) CreateFavoriteMovie(param modelController.ParamAccountUUIDandMovieUUID) (err error) {
 	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(param.AccountUUID)
 	if err != nil {
 		return errors.Wrap(err, "[Controller][CreateFavoriteMovie()]->Fail to parse account uuid")
@@ -33,7 +33,7 @@ func (receiver ControllerReceiverArgument) CreateFavoriteMovie(param modelContro
 	return nil
 }
 
-func (receiver ControllerReceiverArgument) CheckFavoriteMovie(param modelController.ParamFavoriteMovie) (returnData modelController.ReturnIsNotFoundOnly, err error) {
+func (receiver ControllerReceiverArgument) CheckFavoriteMovie(param modelController.ParamAccountUUIDandMovieUUID) (returnData modelController.ReturnIsNotFoundOnly, err error) {
 	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(param.AccountUUID)
 	if err != nil {
 		return returnData, errors.Wrap(err, "[Controller][CheckFavoriteMovie()]->Fail to parse account uuid")
@@ -61,7 +61,7 @@ func (receiver ControllerReceiverArgument) CheckFavoriteMovie(param modelControl
 	return returnData, nil
 }
 
-func (receiver ControllerReceiverArgument) DeleteFavoriteMovie(param modelController.ParamFavoriteMovie) (returnData modelController.ReturnIsNotFoundOnly, err error) {
+func (receiver ControllerReceiverArgument) DeleteFavoriteMovie(param modelController.ParamAccountUUIDandMovieUUID) (returnData modelController.ReturnIsNotFoundOnly, err error) {
 	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(param.AccountUUID)
 	if err != nil {
 		return returnData, errors.Wrap(err, "[Controller][DeleteFavoriteMovie()]->Fail to parse account uuid")

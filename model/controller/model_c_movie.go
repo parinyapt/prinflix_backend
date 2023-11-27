@@ -52,7 +52,7 @@ type ReturnGetMovieDetail struct {
 	IsFavorite        bool
 }
 
-type ParamGetMovieDetail struct {
+type ParamAccountUUIDandMovieUUID struct {
 	AccountUUID string
 	MovieUUID   string
 }
