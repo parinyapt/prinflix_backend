@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -32,8 +31,6 @@ func GetMovieVideoFileHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-
-	fmt.Println(uriParam)
 
 	movieVideo, err := controller.GetMovieVideoFile(modelController.ParamGetMovieVideoFile{
 		MovieUUID: uriParam.MovieUUID,
