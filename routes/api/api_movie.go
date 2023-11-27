@@ -14,10 +14,11 @@ func InitMovieAPI(router *gin.RouterGroup) {
 		user.GET("category", handler.GetMovieCategoryListHandler)
 		user.GET("", handler.GetMovieListHandler)
 		user.GET("/:movie_uuid", handler.GetMovieDetailHandler)
-		// user.GET("favorite", handler.GetFavoriteMovieListHandler)
-		// user.GET("watch", handler.GetWatchMovieListHandler)
-		// user.POST("/:movie_uuid/favorite", handler.AddFavoriteMovieHandler)
-		// user.DELETE("/:movie_uuid/favorite", handler.RemoveFavoriteMovieHandler)
+		user.GET("favorite", handler.GetFavoriteMovieListHandler)
+		user.POST("/:movie_uuid/favorite", handler.AddFavoriteMovieHandler)
+		user.DELETE("/:movie_uuid/favorite", handler.RemoveFavoriteMovieHandler)
+		// user.GET("recommend", handler.GetRecommendMovieListHandler)
+		// user.GET("continue_watching", handler.GetContinueWatchingMovieListHandler)
 		// user.POST("/:movie_uuid/watch", handler.RequestWatchMovieHandler)
 	}
 }

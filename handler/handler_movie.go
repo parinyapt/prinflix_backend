@@ -124,7 +124,7 @@ func GetMovieListHandler(c *gin.Context) {
 }
 
 func GetMovieDetailHandler(c *gin.Context) {
-	var uriParam modelHandler.UriParamGetMovieDetail
+	var uriParam modelHandler.UriParamMovieUUIDonly
 
 	if err := c.ShouldBindUri(&uriParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
