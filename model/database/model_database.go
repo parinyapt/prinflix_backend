@@ -110,3 +110,29 @@ type FavoriteMovie struct {
 func (FavoriteMovie) TableName() string {
 	return utilsDatabase.GenerateTableName("favorite_movie")
 }
+
+type WatchSession struct {
+	UUID        uuid.UUID `gorm:"column:watch_session_uuid;primary_key;not null"`
+	AccountUUID uuid.UUID `gorm:"column:watch_session_account_uuid;not null"`
+	MovieUUID   uuid.UUID `gorm:"column:watch_session_movie_uuid;not null"`
+	ExpiredAt   time.Time `gorm:"column:watch_session_expired_at;not null"`
+	CreatedAt   time.Time `gorm:"column:watch_session_created_at;not null"`
+}
+
+func (WatchSession) TableName() string {
+	return utilsDatabase.GenerateTableName("watch_session")
+}
+
+type WatchHistory struct {
+	UUID            uuid.UUID `gorm:"column:watch_history_uuid;primary_key;not null"`
+	AccountUUID     uuid.UUID `gorm:"column:watch_history_account_uuid;not null"`
+	MovieUUID       uuid.UUID `gorm:"column:watch_history_movie_uuid;not null"`
+	LatestTimeStamp int64     `gorm:"column:watch_history_latest_timestamp;default:0;not null"`
+	IsEnd           bool      `gorm:"column:watch_history_is_end;default:false;not null"`
+	CreatedAt       time.Time `gorm:"column:watch_history_created_at;not null"`
+	UpdatedAt       time.Time `gorm:"column:watch_history_updated_at;not null"`
+}
+
+func (WatchHistory) TableName() string {
+	return utilsDatabase.GenerateTableName("watch_history")
+}
