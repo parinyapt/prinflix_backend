@@ -44,7 +44,7 @@ func AddFavoriteMovieHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	checkFavoriteMovie, err := controllerInstance.CheckFavoriteMovie(modelController.ParamFavoriteMovie{
+	checkFavoriteMovie, err := controllerInstance.CheckFavoriteMovie(modelController.ParamAccountUUIDandMovieUUID{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		MovieUUID:   uriParam.MovieUUID,
 	})
@@ -63,7 +63,7 @@ func AddFavoriteMovieHandler(c *gin.Context) {
 		return
 	}
 
-	createFavoriteMovieErr := controllerInstance.CreateFavoriteMovie(modelController.ParamFavoriteMovie{
+	createFavoriteMovieErr := controllerInstance.CreateFavoriteMovie(modelController.ParamAccountUUIDandMovieUUID{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		MovieUUID:   uriParam.MovieUUID,
 	})
@@ -113,7 +113,7 @@ func RemoveFavoriteMovieHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	checkFavoriteMovie, err := controllerInstance.CheckFavoriteMovie(modelController.ParamFavoriteMovie{
+	checkFavoriteMovie, err := controllerInstance.CheckFavoriteMovie(modelController.ParamAccountUUIDandMovieUUID{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		MovieUUID:   uriParam.MovieUUID,
 	})
@@ -132,7 +132,7 @@ func RemoveFavoriteMovieHandler(c *gin.Context) {
 		return
 	}
 
-	deleteFavoriteMovie, err := controllerInstance.DeleteFavoriteMovie(modelController.ParamFavoriteMovie{
+	deleteFavoriteMovie, err := controllerInstance.DeleteFavoriteMovie(modelController.ParamAccountUUIDandMovieUUID{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
 		MovieUUID:   uriParam.MovieUUID,
 	})
