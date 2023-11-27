@@ -225,7 +225,7 @@ func RequestEndMovieHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	c.SetCookie("prinflix_session_token", "", -1, "/", os.Getenv("APP_BASE_URL"), true, true)
+	c.SetCookie("prinflix_session_token", "", -1, "/", "prinpt.com", true, true)
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
 		Data:         "Update Watch History Success",
