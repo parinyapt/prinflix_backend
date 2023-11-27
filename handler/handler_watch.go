@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	PTGUvalidator "github.com/parinyapt/golang_utils/validator/v1"
@@ -125,7 +124,7 @@ func RequestWatchMovieHandler(c *gin.Context) {
 	databaseTx.Commit()
 
 	cookieMaxAge := int(controller.WatchSessionExpiredIn.Seconds())
-	c.SetCookie("prinflix_session_token", generateWatchSessionToken.WatchSessionToken, cookieMaxAge, "/", os.Getenv("APP_BASE_URL"), true, true)
+	c.SetCookie("prinflix_session_token", generateWatchSessionToken.WatchSessionToken, cookieMaxAge, "/", "prinpt.com", true, true)
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
 		Data:         "Create Watch Session Success",
