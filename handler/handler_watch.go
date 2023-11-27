@@ -124,7 +124,8 @@ func RequestWatchMovieHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	c.SetCookie("prinflix_session_token", generateWatchSessionToken.WatchSessionToken, -1, "/", os.Getenv("APP_BASE_URL"), true, true)
+	cookieMaxAge := int(controller.WatchSessionExpiredIn.Seconds())
+	c.SetCookie("prinflix_session_token", generateWatchSessionToken.WatchSessionToken, cookieMaxAge, "/", os.Getenv("APP_BASE_URL"), true, true)
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
 		Data:         "Create Watch Session Success",
@@ -157,54 +158,13 @@ func RequestPauseMovieHandler(c *gin.Context) {
 		return
 	}
 
-	sessionToken, err := c.Cookie("prinflix_session_token")
-	if err != nil {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-	tokenData, err := controller.ValidateWatchSessionToken(sessionToken)
-	if err != nil {
-		logger.Error("[Handler][RequestPauseMovieHandler()]->Error ValidateWatchSessionToken()", logger.Field("error", err.Error()))
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-	if tokenData.IsExpired {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-
 	databaseTx := database.DB.Begin()
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	checkWatchSession, err := controllerInstance.CheckWatchSession(tokenData.SessionUUID)
-	if err != nil {
-		logger.Error("[Handler][RequestPauseMovieHandler()]->Error CheckWatchSession()", logger.Field("error", err.Error()))
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusInternalServerError,
-		})
-		return
-	}
-	if checkWatchSession.IsNotFound {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-
 	updateWatchHistory, err := controllerInstance.ClearWatchHistoryPause(modelController.ParamUpdateWatchHistory{
-		AccountUUID: checkWatchSession.AccountUUID.String(),
-		MovieUUID:   checkWatchSession.MovieUUID.String(),
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+		MovieUUID:   c.GetString("WATCHSESSION_MOVIE_UUID"),
 		TimeStamp:   request.TimeStamp,
 	})
 	if err != nil {
@@ -231,54 +191,22 @@ func RequestPauseMovieHandler(c *gin.Context) {
 }
 
 func RequestEndMovieHandler(c *gin.Context) {
-	sessionToken, err := c.Cookie("prinflix_session_token")
-	if err != nil {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-	tokenData, err := controller.ValidateWatchSessionToken(sessionToken)
-	if err != nil {
-		logger.Error("[Handler][RequestEndMovieHandler()]->Error ValidateWatchSessionToken()", logger.Field("error", err.Error()))
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-	if tokenData.IsExpired {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
-
 	databaseTx := database.DB.Begin()
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
-	checkWatchSession, err := controllerInstance.CheckWatchSession(tokenData.SessionUUID)
+	err := controllerInstance.DeleteAllWatchSessionByAccountUUID(c.GetString("ACCOUNT_UUID"))
 	if err != nil {
-		logger.Error("[Handler][RequestEndMovieHandler()]->Error CheckWatchSession()", logger.Field("error", err.Error()))
+		logger.Error("[Handler][RequestEndMovieHandler()]->Error DeleteAllWatchSessionByAccountUUID()", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
 		return
 	}
-	if checkWatchSession.IsNotFound {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusBadRequest,
-			Error:        "Invalid Session",
-		})
-		return
-	}
 
 	updateWatchHistory, err := controllerInstance.ClearWatchHistoryEnd(modelController.ParamUpdateWatchHistory{
-		AccountUUID: checkWatchSession.AccountUUID.String(),
-		MovieUUID:   checkWatchSession.MovieUUID.String(),
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+		MovieUUID:   c.GetString("WATCHSESSION_MOVIE_UUID"),
 	})
 	if err != nil {
 		logger.Error("[Handler][RequestEndMovieHandler()]->Error ClearWatchHistoryEnd()", logger.Field("error", err.Error()))
@@ -297,6 +225,7 @@ func RequestEndMovieHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
+	c.SetCookie("prinflix_session_token", "", -1, "/", os.Getenv("APP_BASE_URL"), true, true)
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
 		Data:         "Update Watch History Success",

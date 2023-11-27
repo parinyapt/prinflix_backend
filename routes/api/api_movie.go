@@ -20,7 +20,11 @@ func InitMovieAPI(router *gin.RouterGroup) {
 		// user.GET("recommend", handler.GetRecommendMovieListHandler)
 		// user.GET("continue_watching", handler.GetContinueWatchingMovieListHandler)
 		user.POST("/:movie_uuid/watch", handler.RequestWatchMovieHandler)
-		user.POST("/watch/pause", handler.RequestPauseMovieHandler)
-		user.POST("/watch/end", handler.RequestEndMovieHandler)
+		watchSessionProtect := router.Group("").Use(middleware.WatchSessionCheck)
+		{
+			watchSessionProtect.POST("/watch/pause", handler.RequestPauseMovieHandler)
+			watchSessionProtect.POST("/watch/end", handler.RequestEndMovieHandler)
+		}
+		
 	}
 }
