@@ -174,6 +174,6 @@ func WatchSessionCheck(c *gin.Context) {
 		return
 	}
 
-	c.Set("WATCHSESSION_MOVIE_UUID", checkWatchSession.AccountUUID.String())
+	c.Set("WATCHSESSION_MOVIE_UUID", checkWatchSession.MovieUUID.String())
 	c.Next()
 }
