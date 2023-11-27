@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	modelDatabase "github.com/parinyapt/prinflix_backend/model/database"
 	modelRepository "github.com/parinyapt/prinflix_backend/model/repository"
+	utilsDatabase "github.com/parinyapt/prinflix_backend/utils/database"
 	"github.com/pkg/errors"
 )
 
@@ -37,13 +38,15 @@ func (receiver RepositoryReceiverArgument) FetchOneFavoriteMovieByAccountUUIDAnd
 }
 
 func (receiver RepositoryReceiverArgument) FetchManyFavoriteMovieByAccountUUID(accountUUID uuid.UUID) (result modelRepository.ResultFetchManyFavoriteMovie, err error) {
-	resultDB := receiver.databaseTX.Where(&modelDatabase.FavoriteMovie{AccountUUID: accountUUID}).Find(&result.Data)
+	resultDB := receiver.databaseTX.Model(&modelDatabase.FavoriteMovie{}).Select("movie_uuid, movie_title, movie_description, movie_category_id, movie_category AS movie_category_name").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("movie")+" on favorite_movie_movie_uuid = movie_uuid").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("movie_category")+" on movie_movie_category_id = movie_category_id").Where(&modelDatabase.FavoriteMovie{AccountUUID: accountUUID}).Scan(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchManyFavoriteMovieByAccountUUID()]->"+errorDatabaseQueryFailed)
 	}
 	if resultDB.RowsAffected == 0 {
 		return result, nil
 	}
+
+	result.IsFound = true
 
 	return result, nil
 }

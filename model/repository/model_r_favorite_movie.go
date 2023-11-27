@@ -17,5 +17,5 @@ type ResultFetchOneFavoriteMovie struct {
 
 type ResultFetchManyFavoriteMovie struct {
 	IsFound bool
-	Data    []modelDatabase.FavoriteMovie
+	Data    []DBResultFetchMovie
 }
