@@ -119,7 +119,7 @@ func GetMovieListHandler(c *gin.Context) {
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
-		Error:        response,
+		Data:        response,
 	})
 }
 
@@ -218,5 +218,48 @@ func GetMovieCategoryListHandler(c *gin.Context) {
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
 		Data:         response,
+	})
+}
+
+func GetRecommendMovieListHandler(c *gin.Context) {
+	controllerInstance := controller.NewController(database.DB)
+
+	getManyMovie, err := controllerInstance.GetAllRecommendMovie(c.GetString("ACCOUNT_UUID"))
+	if err != nil {
+		logger.Error("[Handler][GetRecommendMovieListHandler()]->Error GetAllFavoriteMovie()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if getManyMovie.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusNotFound,
+			Error:        "Movie Not Found",
+		})
+		return
+	}
+
+	var response modelHandler.ResponseGetMovieList
+	response.ResultPagination.TotalData = 6
+	response.ResultPagination.TotalPage = 1
+	response.ResultPagination.CurrentPage = 1
+	response.ResultPagination.CurrentLimit = 6
+
+	for _, movie := range getManyMovie.Data {
+		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
+			MovieUUID:         movie.MovieUUID,
+			MovieThumbnail:    movie.MovieThumbnail,
+			MovieTitle:        movie.MovieTitle,
+			MovieDescription:  movie.MovieDescription,
+			MovieCategoryID:   movie.MovieCategoryID,
+			MovieCategoryName: movie.MovieCategoryName,
+			IsFavorite:        movie.IsFavorite,
+		})
+	}
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:        response,
 	})
 }
