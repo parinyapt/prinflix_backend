@@ -12,5 +12,6 @@ func InitStorageAPI(router *gin.RouterGroup) {
 	{
 		watchSessionProtect.GET(string(storage.MovieVideoFileRoutePath), handler.GetMovieVideoFileHandler)
 	}
+	router.GET(string(storage.TestMovieVideoFileRoutePath), handler.GetMovieVideoFileHandler)
 	router.GET(string(storage.MovieThumbnailRoutePath), handler.GetMovieThumbnailHandler)
 }
