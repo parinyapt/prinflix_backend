@@ -28,6 +28,7 @@ type ResponseVerifyToken struct {
 	Status        string                   `json:"status"`
 	Role          string                   `json:"role"`
 	OAuth         ResponseVerifyTokenOAuth `json:"oauth"`
+	SessionUUID   string                   `json:"session_id"`
 }
 
 type ResponseVerifyTokenOAuth struct {

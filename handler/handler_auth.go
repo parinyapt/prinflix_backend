@@ -263,6 +263,7 @@ func VerifyTokenHandler(c *gin.Context) {
 	response.Status = accountInfo.Status
 	response.ImageStatus = accountInfo.Image
 	response.Role = accountInfo.Role
+	response.SessionUUID = c.GetString("SESSION_UUID")
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
