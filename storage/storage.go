@@ -20,6 +20,7 @@ type ObjectPath string
 const (
 	// Minio Storage Path
 	ObjectNotFoundPath ObjectPath = "global/object_not_found.jpg"
+	MovieThumbnailNotFoundPath ObjectPath = "global/movie_thumbnail_not_found.jpg"
 	// AccountProfileImageNotfoundPath ObjectPath = "global/profile_no_image.jpg"
 
 	// AccountProfileImagePath ObjectPath = "account/:account_uuid/profile.jpg"

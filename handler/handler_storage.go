@@ -75,9 +75,9 @@ func GetMovieThumbnailHandler(c *gin.Context) {
 		MovieUUID: uriParam.MovieUUID,
 	})
 	if err != nil {
-		movieThumbnail, err = controller.GetObjectNotFound()
+		movieThumbnail, err = controller.GetMovieThumbnailNotFound()
 		if err != nil {
-			logger.Error("[Handler][GetMovieThumbnailHandler()]->Error GetMovieThumbnail()", logger.Field("error", err.Error()))
+			logger.Error("[Handler][GetMovieThumbnailHandler()]->Error GetMovieThumbnail() and GetMovieThumbnailNotFound()", logger.Field("error", err.Error()))
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
