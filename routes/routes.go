@@ -21,7 +21,7 @@ func InitializeRoutes() {
 	router := gin.Default()
 	//config
 	configCors(router)
-	configRateLimit(router)
+	// configRateLimit(router)
 	s := configApi(router, os.Getenv("PORT"))
 
 	//setup all api route
