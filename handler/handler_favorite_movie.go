@@ -68,7 +68,7 @@ func AddFavoriteMovieHandler(c *gin.Context) {
 		MovieUUID:   uriParam.MovieUUID,
 	})
 	if createFavoriteMovieErr != nil {
-		logger.Error("[Handler][AddFavoriteMovieHandler()]->Error CreateFavoriteMovie()", logger.Field("error", err.Error()))
+		logger.Error("[Handler][AddFavoriteMovieHandler()]->Error CreateFavoriteMovie()", logger.Field("error", createFavoriteMovieErr.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})

@@ -57,7 +57,7 @@ func UpdateProfileHandler(c *gin.Context) {
 		return
 	}
 	if updateAccount.IsNotFound {
-		logger.Error("[Handler][UpdateProfileHandler()]->Error UpdateAccount() Not Found", logger.Field("error", err.Error()))
+		logger.Error("[Handler][UpdateProfileHandler()]->Error UpdateAccount() Not Found")
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
