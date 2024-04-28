@@ -46,6 +46,14 @@ func lineOAuthConfig() *PTGUoauthLine.LineOAuthConfig {
 	}
 }
 
+func lineOAuthConfigV2() *PTGUoauthLine.LineOAuthConfig {
+	return &PTGUoauthLine.LineOAuthConfig{
+		ClientID:     os.Getenv("OAUTH2_LINE_CLIENT_ID_V2"),
+		ClientSecret: os.Getenv("OAUTH2_LINE_CLIENT_SECRET_V2"),
+		RedirectURL:  os.Getenv("OAUTH2_LINE_REDIRECT_URL_V2"),
+	}
+}
+
 func GenerateGoogleOAuthURL(state string) (url string) {
 	oauthConfig := googleOAuthConfig()
 
@@ -60,6 +68,19 @@ func GenerateGoogleOAuthURLV2(state string) (url string) {
 
 func GenerateLineOAuthURL(state string) (url string) {
 	oauthConfig := PTGUoauthLine.NewLineOAuth(lineOAuthConfig())
+
+	return oauthConfig.GenerateOAuthURL(PTGUoauthLine.OptionLineGenerateOAuthURL{
+		Scopes: []string{
+			"openid",
+			"profile",
+			"email",
+		},
+		State: state,
+	})
+}
+
+func GenerateLineOAuthURLV2(state string) (url string) {
+	oauthConfig := PTGUoauthLine.NewLineOAuth(lineOAuthConfigV2())
 
 	return oauthConfig.GenerateOAuthURL(PTGUoauthLine.OptionLineGenerateOAuthURL{
 		Scopes: []string{
@@ -107,8 +128,14 @@ func GetGoogleOAuthUserInfo(code string, version int8) (returnData modelControll
 	return returnData, nil
 }
 
-func GetLineOAuthUserInfo(code string) (returnData modelController.ReturnGetOAuthUserInfo, err error) {
-	lineOAuth := PTGUoauthLine.NewLineOAuth(lineOAuthConfig())
+func GetLineOAuthUserInfo(code string, version int8) (returnData modelController.ReturnGetOAuthUserInfo, err error) {
+	var lineOauthConfig *PTGUoauthLine.LineOAuthConfig
+	if version == 2 {
+		lineOauthConfig = lineOAuthConfigV2()
+	}else{
+		lineOauthConfig = lineOAuthConfig()
+	}
+	lineOAuth := PTGUoauthLine.NewLineOAuth(lineOauthConfig)
 
 	tokenData, err := lineOAuth.GetToken(code)
 	if err != nil {

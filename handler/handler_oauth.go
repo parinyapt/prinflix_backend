@@ -323,7 +323,7 @@ func LineCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	getLineOAuthUserInfo, err := controller.GetLineOAuthUserInfo(queryParam.Code)
+	getLineOAuthUserInfo, err := controller.GetLineOAuthUserInfo(queryParam.Code, 1)
 	if err != nil {
 		logger.Error("[Handler][LineCallbackHandler()]->Error GetLineOAuthUserInfo()", logger.Field("error", err.Error()))
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
@@ -492,4 +492,157 @@ func GoogleCallbackV2Handler(c *gin.Context) {
 	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderGoogle, true, codeUUIDEncryptBase64))
 }
 
+func LineLoginV2Handler(c *gin.Context) {
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
 
+	createOauthState, err := controllerInstance.CreateOauthState(modelDatabase.OauthStateProviderLine)
+	if err != nil {
+		logger.Error("[Handler][LineLoginV2Handler()]->Error CreateOauthState()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	authURL := controller.GenerateLineOAuthURLV2(createOauthState.StateUUID.String())
+
+	c.Redirect(http.StatusFound, authURL)
+}
+
+func LineCallbackV2Handler(c *gin.Context) {
+	var queryParam modelHandler.QueryParamOAuthCallback
+
+	if err := c.ShouldBind(&queryParam); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error Validate()", logger.Field("error", validatorError.Error()))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !isValidatePass {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	checkOauthState, err := controllerInstance.CheckOauthState(modelController.ParamOauthState{
+		StateUUID: queryParam.State,
+		Provider:  modelDatabase.OauthStateProviderLine,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error CheckOauthState()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+	if checkOauthState.IsNotFound || checkOauthState.IsExpired {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+
+	err = controllerInstance.DeleteOauthState(modelController.ParamOauthState{
+		StateUUID: queryParam.State,
+		Provider:  modelDatabase.OauthStateProviderLine,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error DeleteOauthState()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+
+	lineOAuthUserInfo, err := controller.GetLineOAuthUserInfo(queryParam.Code, 2)
+	if err != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error GetLineOAuthUserInfo()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		return
+	}
+
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine, modelController.ParamCheckAccountOAuth{
+		UserID: lineOAuthUserInfo.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+
+	var accountUUID uuid.UUID = checkAccountOAuth.AccountUUID
+
+	if checkAccountOAuth.IsNotFound {
+		password, err := password.Generate(64, 10, 10, false, false)
+		if err != nil {
+			logger.Error("[Handler][LineCallbackV2Handler()]->Error Generate Password", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+			return
+		}
+		createAccount, err := controllerInstance.CreateAccount(modelController.ParamCreateAccount{
+			Name:     lineOAuthUserInfo.Name,
+			Email:    lineOAuthUserInfo.Email,
+			Password: password,
+		})
+		if err != nil {
+			logger.Error("[Handler][LineCallbackV2Handler()]->Error Create Account", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+			return
+		}
+
+		accountUUID = createAccount.UUID
+
+		err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
+			AccountUUID: accountUUID.String(),
+			Provider:    modelDatabase.AccountOAuthProviderLine,
+			UserID:      lineOAuthUserInfo.UserID,
+			UserName:    lineOAuthUserInfo.Name,
+			UserEmail:   lineOAuthUserInfo.Email,
+			UserPicture: lineOAuthUserInfo.Picture,
+		})
+		if err != nil {
+			logger.Error("[Handler][LineCallbackV2Handler()]->Error CreateAccountOAuth()", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+			return
+		}
+	}
+
+	createTemporaryCode, err := controllerInstance.CreateTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: accountUUID.String(),
+		Type:        modelDatabase.TemporaryCodeTypeAuthTokenCode,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error CreateTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+
+	codeUUIDEncryptBase64, err := controller.EncryptTemporaryCode(createTemporaryCode.CodeUUID.String())
+	if err != nil {
+		logger.Error("[Handler][LineCallbackV2Handler()]->Error EncryptTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+
+	databaseTx.Commit()
+
+	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, true, codeUUIDEncryptBase64))
+}
+
+func AppleLoginV2Handler(c *gin.Context) {
+}
+
+func AppleCallbackV2Handler(c *gin.Context) {
+}
+
+func RequestConnectAppleOAuthHandler(c *gin.Context) {
+}
+
+func RequestDisconnectAppleOAuthHandler(c *gin.Context) {
+}
