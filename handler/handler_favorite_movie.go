@@ -183,13 +183,20 @@ func GetFavoriteMovieListHandler(c *gin.Context) {
 
 	for _, movie := range getAllFavoriteMovie.Data {
 		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
-			MovieUUID:         movie.MovieUUID,
-			MovieThumbnail:    movie.MovieThumbnail,
-			MovieTitle:        movie.MovieTitle,
-			MovieDescription:  movie.MovieDescription,
-			MovieCategoryID:   movie.MovieCategoryID,
-			MovieCategoryName: movie.MovieCategoryName,
-			IsFavorite:        movie.IsFavorite,
+			MovieUUID:            movie.MovieUUID,
+			MovieThumbnail:       movie.MovieThumbnail,
+			MovieTitle:           movie.MovieTitle,
+			MovieDescription:     movie.MovieDescription,
+			MovieCategoryID:      movie.MovieCategoryID,
+			MovieCategoryName:    movie.MovieCategoryName,
+			IsFavorite:           movie.IsFavorite,
+			ReviewTotalCount:     movie.ReviewTotalCount,
+			ReviewGoodCount:      movie.ReviewGoodCount,
+			ReviewFairCount:      movie.ReviewFairCount,
+			ReviewBadCount:       movie.ReviewBadCount,
+			ReviewGoodPercentage: movie.ReviewGoodPercentage,
+			ReviewFairPercentage: movie.ReviewFairPercentage,
+			ReviewBadPercentage:  movie.ReviewBadPercentage,
 		})
 	}
 

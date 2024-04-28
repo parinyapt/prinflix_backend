@@ -33,4 +33,8 @@ type DBResultFetchMovie struct {
 	MovieCategoryID   uint
 	MovieCategoryName string
 	IsFavorite        bool
+	ReviewTotalCount  int64
+	ReviewGoodCount   int64
+	ReviewFairCount   int64
+	ReviewBadCount    int64
 }

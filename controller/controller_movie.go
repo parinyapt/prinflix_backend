@@ -83,14 +83,34 @@ func (receiver ControllerReceiverArgument) GetAllMovie(param modelController.Par
 			thumbnailURL = ""
 		}
 
+		var reviewGoodPercentage float64
+		var reviewFairPercentage float64
+		var reviewBadPercentage float64
+		if data.ReviewTotalCount == 0 {
+			reviewGoodPercentage = 0
+			reviewFairPercentage = 0
+			reviewBadPercentage = 0
+		} else {
+			reviewGoodPercentage = float64((float64(data.ReviewGoodCount) / float64(data.ReviewTotalCount)) * 100)
+			reviewFairPercentage = float64((float64(data.ReviewFairCount) / float64(data.ReviewTotalCount)) * 100)
+			reviewBadPercentage = float64((float64(data.ReviewBadCount) / float64(data.ReviewTotalCount)) * 100)
+		}
+
 		returnData.Data = append(returnData.Data, modelController.ReturnGetManyMovieData{
-			MovieUUID:         data.MovieUUID,
-			MovieThumbnail:    thumbnailURL,
-			MovieTitle:        data.MovieTitle,
-			MovieDescription:  data.MovieDescription,
-			MovieCategoryID:   data.MovieCategoryID,
-			MovieCategoryName: data.MovieCategoryName,
-			IsFavorite:        data.IsFavorite,
+			MovieUUID:            data.MovieUUID,
+			MovieThumbnail:       thumbnailURL,
+			MovieTitle:           data.MovieTitle,
+			MovieDescription:     data.MovieDescription,
+			MovieCategoryID:      data.MovieCategoryID,
+			MovieCategoryName:    data.MovieCategoryName,
+			IsFavorite:           data.IsFavorite,
+			ReviewTotalCount:     data.ReviewTotalCount,
+			ReviewGoodCount:      data.ReviewGoodCount,
+			ReviewFairCount:      data.ReviewFairCount,
+			ReviewBadCount:       data.ReviewBadCount,
+			ReviewGoodPercentage: reviewGoodPercentage,
+			ReviewFairPercentage: reviewFairPercentage,
+			ReviewBadPercentage:  reviewBadPercentage,
 		})
 	}
 
@@ -137,6 +157,19 @@ func (receiver ControllerReceiverArgument) GetMovieDetail(param modelController.
 	})
 	if err != nil {
 		returnData.MovieThumbnail = ""
+	}
+	returnData.ReviewTotalCount = repoData.Data.ReviewTotalCount
+	returnData.ReviewGoodCount = repoData.Data.ReviewGoodCount
+	returnData.ReviewFairCount = repoData.Data.ReviewFairCount
+	returnData.ReviewBadCount = repoData.Data.ReviewBadCount
+	if repoData.Data.ReviewTotalCount == 0 {
+		returnData.ReviewGoodPercentage = 0
+		returnData.ReviewFairPercentage = 0
+		returnData.ReviewBadPercentage = 0
+	} else {
+		returnData.ReviewGoodPercentage = float64((float64(repoData.Data.ReviewGoodCount) / float64(repoData.Data.ReviewTotalCount)) * 100)
+		returnData.ReviewFairPercentage = float64((float64(repoData.Data.ReviewFairCount) / float64(repoData.Data.ReviewTotalCount)) * 100)
+		returnData.ReviewBadPercentage = float64((float64(repoData.Data.ReviewBadCount) / float64(repoData.Data.ReviewTotalCount)) * 100)
 	}
 
 	return returnData, nil

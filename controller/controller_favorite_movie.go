@@ -114,6 +114,18 @@ func (receiver ControllerReceiverArgument) GetAllFavoriteMovie(accountUUID strin
 			thumbnailURL = ""
 		}
 
+		var reviewGoodPercentage float64
+		var reviewFairPercentage float64
+		var reviewBadPercentage float64
+		if data.ReviewTotalCount == 0 {
+			reviewGoodPercentage = 0
+			reviewFairPercentage = 0
+			reviewBadPercentage = 0
+		} else {
+			reviewGoodPercentage = float64((float64(data.ReviewGoodCount) / float64(data.ReviewTotalCount)) * 100)
+			reviewFairPercentage = float64((float64(data.ReviewFairCount) / float64(data.ReviewTotalCount)) * 100)
+			reviewBadPercentage = float64((float64(data.ReviewBadCount) / float64(data.ReviewTotalCount)) * 100)
+		}
 		returnData.Data = append(returnData.Data, modelController.ReturnGetManyMovieData{
 			MovieUUID:         data.MovieUUID,
 			MovieThumbnail:    thumbnailURL,
@@ -122,6 +134,13 @@ func (receiver ControllerReceiverArgument) GetAllFavoriteMovie(accountUUID strin
 			MovieCategoryID:   data.MovieCategoryID,
 			MovieCategoryName: data.MovieCategoryName,
 			IsFavorite:        true,
+			ReviewTotalCount:     data.ReviewTotalCount,
+			ReviewGoodCount:      data.ReviewGoodCount,
+			ReviewFairCount:      data.ReviewFairCount,
+			ReviewBadCount:       data.ReviewBadCount,
+			ReviewGoodPercentage: reviewGoodPercentage,
+			ReviewFairPercentage: reviewFairPercentage,
+			ReviewBadPercentage:  reviewBadPercentage,
 		})
 	}
 

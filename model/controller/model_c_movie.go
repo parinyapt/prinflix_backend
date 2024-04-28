@@ -31,25 +31,39 @@ type ReturnGetManyMovie struct {
 }
 
 type ReturnGetManyMovieData struct {
-	MovieUUID         uuid.UUID
-	MovieThumbnail    string
-	MovieTitle        string
-	MovieDescription  string
-	MovieCategoryID   uint
-	MovieCategoryName string
-	IsFavorite        bool
+	MovieUUID            uuid.UUID
+	MovieThumbnail       string
+	MovieTitle           string
+	MovieDescription     string
+	MovieCategoryID      uint
+	MovieCategoryName    string
+	IsFavorite           bool
+	ReviewTotalCount     int64
+	ReviewGoodCount      int64
+	ReviewFairCount      int64
+	ReviewBadCount       int64
+	ReviewGoodPercentage float64
+	ReviewFairPercentage float64
+	ReviewBadPercentage  float64
 }
 
 type ReturnGetMovieDetail struct {
 	IsNotFound bool
 
-	MovieUUID         uuid.UUID
-	MovieThumbnail    string
-	MovieTitle        string
-	MovieDescription  string
-	MovieCategoryID   uint
-	MovieCategoryName string
-	IsFavorite        bool
+	MovieUUID            uuid.UUID
+	MovieThumbnail       string
+	MovieTitle           string
+	MovieDescription     string
+	MovieCategoryID      uint
+	MovieCategoryName    string
+	IsFavorite           bool
+	ReviewTotalCount     int64
+	ReviewGoodCount      int64
+	ReviewFairCount      int64
+	ReviewBadCount       int64
+	ReviewGoodPercentage float64
+	ReviewFairPercentage float64
+	ReviewBadPercentage  float64
 }
 
 type ParamAccountUUIDandMovieUUID struct {

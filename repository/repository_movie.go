@@ -14,7 +14,7 @@ import (
 
 func (receiver RepositoryReceiverArgument) FetchOneMovie(param modelRepository.ParamFetchOneMovie) (result modelRepository.ResultFetchOneMovie, err error) {
 	sqlCommand := `SELECT
-		movie_uuid,
+		@table_movie.movie_uuid AS movie_uuid,
 		movie_title,
 		movie_description,
 		movie_category_id,
@@ -22,7 +22,11 @@ func (receiver RepositoryReceiverArgument) FetchOneMovie(param modelRepository.P
 		CASE
 			WHEN favorite_movie_created_at is not NULL THEN true
 			ELSE false
-		END AS is_favorite
+		END AS is_favorite,
+		@view_review_stat.review_total_count AS review_total_count,
+		@view_review_stat.review_good_count AS review_good_count,
+		@view_review_stat.review_fair_count AS review_fair_count,
+		@view_review_stat.review_bad_count AS review_bad_count
 	FROM
 		@table_movie
 	INNER JOIN @table_movie_category ON movie_movie_category_id = movie_category_id
@@ -33,18 +37,20 @@ func (receiver RepositoryReceiverArgument) FetchOneMovie(param modelRepository.P
 			@table_favorite_movie
 		WHERE
 			favorite_movie_account_uuid = @account_uuid
-	) tt ON movie_uuid = tt.favorite_movie_movie_uuid
+	) tt ON @table_movie.movie_uuid = tt.favorite_movie_movie_uuid
 	LEFT JOIN @table_favorite_movie ON tt.favorite_movie_movie_uuid = @table_favorite_movie.favorite_movie_movie_uuid
+	INNER JOIN @view_review_stat ON @table_movie.movie_uuid = @view_review_stat.movie_uuid
 	WHERE
 	(
 		@table_favorite_movie.favorite_movie_account_uuid = @account_uuid
 		OR 
 		@table_favorite_movie.favorite_movie_account_uuid IS NULL
-	) AND movie_uuid = @movie_uuid;`
+	) AND @table_movie.movie_uuid = @movie_uuid;`
 	sqlCommand = PTGUdata.ReplaceString(sqlCommand, map[string]string{
 		"@table_movie":          utilsDatabase.GenerateTableName("movie"),
 		"@table_movie_category": utilsDatabase.GenerateTableName("movie_category"),
 		"@table_favorite_movie": utilsDatabase.GenerateTableName("favorite_movie"),
+		"@view_review_stat":     utilsDatabase.GenerateTableName("view_review_stat"),
 	})
 	resultDB := receiver.databaseTX.Raw(sqlCommand, map[string]interface{}{
 		"account_uuid": param.AccountUUID,
@@ -97,7 +103,7 @@ func (receiver RepositoryReceiverArgument) FetchManyMovie(accountUUID uuid.UUID,
 	result.Pagination.Limit = param.Pagination.Limit
 
 	sqlCommand := `SELECT
-		movie_uuid,
+		@table_movie.movie_uuid AS movie_uuid,
 		movie_title,
 		movie_description,
 		movie_category_id,
@@ -105,11 +111,15 @@ func (receiver RepositoryReceiverArgument) FetchManyMovie(accountUUID uuid.UUID,
 		CASE
 			WHEN favorite_movie_created_at is not NULL THEN true
 			ELSE false
-		END AS is_favorite
+		END AS is_favorite,
+		@view_review_stat.review_total_count AS review_total_count,
+		@view_review_stat.review_good_count AS review_good_count,
+		@view_review_stat.review_fair_count AS review_fair_count,
+		@view_review_stat.review_bad_count AS review_bad_count
 	FROM
 		@table_movie
 	INNER JOIN(
-		SELECT movie_uuid FROM @table_movie WHERE ` + whereCondition + ` ORDER BY @sort_field @sort_order_by LIMIT @limit OFFSET @offset
+		SELECT @table_movie.movie_uuid FROM @table_movie WHERE ` + whereCondition + ` ORDER BY @sort_field @sort_order_by LIMIT @limit OFFSET @offset
 	) AS tmp USING(movie_uuid)
 	INNER JOIN @table_movie_category ON movie_movie_category_id = movie_category_id
 	LEFT JOIN(
@@ -119,8 +129,9 @@ func (receiver RepositoryReceiverArgument) FetchManyMovie(accountUUID uuid.UUID,
 			@table_favorite_movie
 		WHERE
 			favorite_movie_account_uuid = @account_uuid
-	) tt ON movie_uuid = tt.favorite_movie_movie_uuid
+	) tt ON @table_movie.movie_uuid = tt.favorite_movie_movie_uuid
 	LEFT JOIN @table_favorite_movie ON tt.favorite_movie_movie_uuid = @table_favorite_movie.favorite_movie_movie_uuid
+	INNER JOIN @view_review_stat ON @table_movie.movie_uuid = @view_review_stat.movie_uuid
 	WHERE
 	(
 		@table_favorite_movie.favorite_movie_account_uuid = @account_uuid
@@ -132,6 +143,7 @@ func (receiver RepositoryReceiverArgument) FetchManyMovie(accountUUID uuid.UUID,
 		"@table_movie":          utilsDatabase.GenerateTableName("movie"),
 		"@table_movie_category": utilsDatabase.GenerateTableName("movie_category"),
 		"@table_favorite_movie": utilsDatabase.GenerateTableName("favorite_movie"),
+		"@view_review_stat":     utilsDatabase.GenerateTableName("view_review_stat"),
 		"@sort_field":           param.Pagination.SortField,
 		"@sort_order_by":        param.Pagination.SortOrderBy,
 		"@limit":                fmt.Sprintf("%d", param.Pagination.Limit),

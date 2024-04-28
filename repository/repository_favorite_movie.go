@@ -38,7 +38,7 @@ func (receiver RepositoryReceiverArgument) FetchOneFavoriteMovieByAccountUUIDAnd
 }
 
 func (receiver RepositoryReceiverArgument) FetchManyFavoriteMovieByAccountUUID(accountUUID uuid.UUID) (result modelRepository.ResultFetchManyFavoriteMovie, err error) {
-	resultDB := receiver.databaseTX.Model(&modelDatabase.FavoriteMovie{}).Select("movie_uuid, movie_title, movie_description, movie_category_id, movie_category AS movie_category_name").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("movie")+" on favorite_movie_movie_uuid = movie_uuid").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("movie_category")+" on movie_movie_category_id = movie_category_id").Where(&modelDatabase.FavoriteMovie{AccountUUID: accountUUID}).Scan(&result.Data)
+	resultDB := receiver.databaseTX.Model(&modelDatabase.FavoriteMovie{}).Select(utilsDatabase.GenerateTableName("movie")+".movie_uuid AS movie_uuid, movie_title, movie_description, movie_category_id, movie_category AS movie_category_name, review_total_count, review_good_count, review_fair_count, review_bad_count").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("movie")+" on favorite_movie_movie_uuid = "+utilsDatabase.GenerateTableName("movie")+".movie_uuid").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("movie_category")+" on movie_movie_category_id = movie_category_id").Joins("INNER JOIN "+utilsDatabase.GenerateTableName("view_review_stat")+" on "+utilsDatabase.GenerateTableName("movie")+".movie_uuid = "+utilsDatabase.GenerateTableName("view_review_stat")+".movie_uuid").Where(&modelDatabase.FavoriteMovie{AccountUUID: accountUUID}).Scan(&result.Data)
 	if resultDB.Error != nil {
 		return result, errors.Wrap(resultDB.Error, "[Repository][FetchManyFavoriteMovieByAccountUUID()]->"+errorDatabaseQueryFailed)
 	}

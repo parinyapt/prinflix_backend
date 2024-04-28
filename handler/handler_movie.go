@@ -107,19 +107,26 @@ func GetMovieListHandler(c *gin.Context) {
 
 	for _, movie := range getManyMovie.Data {
 		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
-			MovieUUID:         movie.MovieUUID,
-			MovieThumbnail:    movie.MovieThumbnail,
-			MovieTitle:        movie.MovieTitle,
-			MovieDescription:  movie.MovieDescription,
-			MovieCategoryID:   movie.MovieCategoryID,
-			MovieCategoryName: movie.MovieCategoryName,
-			IsFavorite:        movie.IsFavorite,
+			MovieUUID:            movie.MovieUUID,
+			MovieThumbnail:       movie.MovieThumbnail,
+			MovieTitle:           movie.MovieTitle,
+			MovieDescription:     movie.MovieDescription,
+			MovieCategoryID:      movie.MovieCategoryID,
+			MovieCategoryName:    movie.MovieCategoryName,
+			IsFavorite:           movie.IsFavorite,
+			ReviewTotalCount:     movie.ReviewTotalCount,
+			ReviewGoodCount:      movie.ReviewGoodCount,
+			ReviewFairCount:      movie.ReviewFairCount,
+			ReviewBadCount:       movie.ReviewBadCount,
+			ReviewGoodPercentage: movie.ReviewGoodPercentage,
+			ReviewFairPercentage: movie.ReviewFairPercentage,
+			ReviewBadPercentage:  movie.ReviewBadPercentage,
 		})
 	}
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
-		Data:        response,
+		Data:         response,
 	})
 }
 
@@ -180,6 +187,13 @@ func GetMovieDetailHandler(c *gin.Context) {
 	response.MovieCategoryID = getMovieDetail.MovieCategoryID
 	response.MovieCategoryName = getMovieDetail.MovieCategoryName
 	response.IsFavorite = getMovieDetail.IsFavorite
+	response.ReviewTotalCount = getMovieDetail.ReviewTotalCount
+	response.ReviewGoodCount = getMovieDetail.ReviewGoodCount
+	response.ReviewFairCount = getMovieDetail.ReviewFairCount
+	response.ReviewBadCount = getMovieDetail.ReviewBadCount
+	response.ReviewGoodPercentage = getMovieDetail.ReviewGoodPercentage
+	response.ReviewFairPercentage = getMovieDetail.ReviewFairPercentage
+	response.ReviewBadPercentage = getMovieDetail.ReviewBadPercentage
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
@@ -260,6 +274,6 @@ func GetRecommendMovieListHandler(c *gin.Context) {
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
-		Data:        response,
+		Data:         response,
 	})
 }
