@@ -1,6 +1,8 @@
 module github.com/parinyapt/prinflix_backend
 
-go 1.21
+go 1.22
+
+toolchain go1.22.2
 
 require (
 	github.com/gin-contrib/cors v1.4.0
@@ -12,6 +14,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.59
 	github.com/parinyapt/golang_utils v1.0.11
 	github.com/pkg/errors v0.9.1
+	github.com/sethvargo/go-password v0.3.0
 	github.com/spf13/viper v1.17.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/oauth2 v0.12.0

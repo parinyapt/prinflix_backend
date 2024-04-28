@@ -25,6 +25,19 @@ func googleOAuthConfig() *oauth2.Config {
 	}
 }
 
+func googleOAuthConfigV2() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  os.Getenv("OAUTH2_GOOGLE_REDIRECT_URL_V2"),
+		ClientID:     os.Getenv("OAUTH2_GOOGLE_CLIENT_ID"),
+		ClientSecret: os.Getenv("OAUTH2_GOOGLE_CLIENT_SECRET"),
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+		},
+		Endpoint: google.Endpoint,
+	}
+}
+
 func lineOAuthConfig() *PTGUoauthLine.LineOAuthConfig {
 	return &PTGUoauthLine.LineOAuthConfig{
 		ClientID:     os.Getenv("OAUTH2_LINE_CLIENT_ID"),
@@ -35,6 +48,12 @@ func lineOAuthConfig() *PTGUoauthLine.LineOAuthConfig {
 
 func GenerateGoogleOAuthURL(state string) (url string) {
 	oauthConfig := googleOAuthConfig()
+
+	return oauthConfig.AuthCodeURL(state)
+}
+
+func GenerateGoogleOAuthURLV2(state string) (url string) {
+	oauthConfig := googleOAuthConfigV2()
 
 	return oauthConfig.AuthCodeURL(state)
 }
@@ -52,8 +71,15 @@ func GenerateLineOAuthURL(state string) (url string) {
 	})
 }
 
-func GetGoogleOAuthUserInfo(code string) (returnData modelController.ReturnGetOAuthUserInfo, err error) {
-	googleOAuth := PTGUoauthGoogle.NewGoogleOAuth(googleOAuthConfig())
+func GetGoogleOAuthUserInfo(code string, version int8) (returnData modelController.ReturnGetOAuthUserInfo, err error) {
+	var googleOauthConfig *oauth2.Config
+	if version == 2 {
+		googleOauthConfig = googleOAuthConfigV2()
+	}else{
+		googleOauthConfig = googleOAuthConfig()
+	}
+	googleOAuth := PTGUoauthGoogle.NewGoogleOAuth(googleOauthConfig)
+
 
 	accessToken, err := googleOAuth.GetAccessToken(code)
 	if err != nil {
