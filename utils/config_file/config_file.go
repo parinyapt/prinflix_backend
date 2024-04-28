@@ -8,6 +8,9 @@ const (
 	EmailVerifySuccessPagePath  = "email_verification.success"
 	EmailVerifyFailPagePath     = "email_verification.fail"
 	ResetPasswordPagePath       = "reset_password_page"
+
+	AppLoginOAuthSuccessPagePath = "oauth.success"
+	AppLoginOAuthFailPagePath    = "oauth.fail"
 )
 
 func GetConfigDomain() []string {
@@ -20,4 +23,12 @@ func GetFrontendBaseURL() string {
 
 func GetRedirectPagePath(page string) string {
 	return viper.GetString("path." + page)
+}
+
+func GetAppBaseURL() string {
+	return viper.GetString("application.base_url")
+}
+
+func GetAppRedirectPath(page string) string {
+	return viper.GetString("application.redirect_path." + page)
 }
