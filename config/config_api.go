@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var CorsAllowOrigins []string
+var CorsAllowOrigins []string = []string{"https://appleid.apple.com"}
 
 func initializeAPIConfigFile() {
 	viper.SetConfigName("api_config") // name of config file (without extension)

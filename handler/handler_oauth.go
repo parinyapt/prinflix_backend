@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -70,7 +71,7 @@ func RequestConnectGoogleOAuthHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	response.AuthURL = controller.GenerateGoogleOAuthURL(createTemporaryCode.CodeUUID.String())
+	response.AuthURL = controller.GenerateGoogleOAuthURL(createTemporaryCode.CodeUUID.String(), 1)
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
@@ -162,7 +163,7 @@ func RequestConnectLineOAuthHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	response.AuthURL = controller.GenerateLineOAuthURL(createTemporaryCode.CodeUUID.String())
+	response.AuthURL = controller.GenerateLineOAuthURL(createTemporaryCode.CodeUUID.String(), 1)
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
@@ -365,7 +366,7 @@ func GoogleLoginV2Handler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	authURL := controller.GenerateGoogleOAuthURLV2(createOauthState.StateUUID.String())
+	authURL := controller.GenerateGoogleOAuthURL(createOauthState.StateUUID.String(), 2)
 
 	c.Redirect(http.StatusFound, authURL)
 }
@@ -508,7 +509,7 @@ func LineLoginV2Handler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	authURL := controller.GenerateLineOAuthURLV2(createOauthState.StateUUID.String())
+	authURL := controller.GenerateLineOAuthURL(createOauthState.StateUUID.String(), 2)
 
 	c.Redirect(http.StatusFound, authURL)
 }
@@ -636,9 +637,160 @@ func LineCallbackV2Handler(c *gin.Context) {
 }
 
 func AppleLoginV2Handler(c *gin.Context) {
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	createOauthState, err := controllerInstance.CreateOauthState(modelDatabase.OauthStateProviderApple)
+	if err != nil {
+		logger.Error("[Handler][AppleLoginV2Handler()]->Error CreateOauthState()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	authURL := controller.GenerateAppleOAuthURL(createOauthState.StateUUID.String(), 2)
+
+	c.Redirect(http.StatusFound, authURL)
 }
 
 func AppleCallbackV2Handler(c *gin.Context) {
+	var request modelHandler.RequestAppleCallback
+
+	if err := c.ShouldBind(&request); err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(request)
+	if validatorError != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if !isValidatePass {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	checkOauthState, err := controllerInstance.CheckOauthState(modelController.ParamOauthState{
+		StateUUID: request.State,
+		Provider:  modelDatabase.OauthStateProviderApple,
+	})
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error CheckOauthState()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+	if checkOauthState.IsNotFound || checkOauthState.IsExpired {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	err = controllerInstance.DeleteOauthState(modelController.ParamOauthState{
+		StateUUID: request.State,
+		Provider:  modelDatabase.OauthStateProviderApple,
+	})
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error DeleteOauthState()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	appleOAuthUserInfo, err := controller.GetAppleOAuthUserInfo(request.Code, 2)
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error GetLineOAuthUserInfo()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderApple, modelController.ParamCheckAccountOAuth{
+		UserID: appleOAuthUserInfo.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	var accountUUID uuid.UUID = checkAccountOAuth.AccountUUID
+
+	if checkAccountOAuth.IsNotFound {
+		var userData modelHandler.RequestAppleCallbackUser
+		if request.User != "" {
+			err := json.Unmarshal([]byte(request.User), &userData)
+			if err != nil {
+				logger.Error("[Handler][AppleCallbackV2Handler()]->Json unmarshal user data fail", logger.Field("error", err))
+				c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+				return
+			}
+		}
+		appleOAuthUserInfo.Name = userData.Name.FirstName + " " + userData.Name.LastName
+		if appleOAuthUserInfo.Name == " " {
+			appleOAuthUserInfo.Name = "User " + appleOAuthUserInfo.Email
+		}
+
+		password, err := password.Generate(64, 10, 10, false, false)
+		if err != nil {
+			logger.Error("[Handler][AppleCallbackV2Handler()]->Error Generate Password", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+			return
+		}
+		createAccount, err := controllerInstance.CreateAccount(modelController.ParamCreateAccount{
+			Name:     appleOAuthUserInfo.Name,
+			Email:    appleOAuthUserInfo.Email,
+			Password: password,
+		})
+		if err != nil {
+			logger.Error("[Handler][AppleCallbackV2Handler()]->Error Create Account", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+			return
+		}
+
+		accountUUID = createAccount.UUID
+
+		err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
+			AccountUUID: accountUUID.String(),
+			Provider:    modelDatabase.AccountOAuthProviderApple,
+			UserID:      appleOAuthUserInfo.UserID,
+			UserName:    appleOAuthUserInfo.Name,
+			UserEmail:   appleOAuthUserInfo.Email,
+			UserPicture: "",
+		})
+		if err != nil {
+			logger.Error("[Handler][AppleCallbackV2Handler()]->Error CreateAccountOAuth()", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+			return
+		}
+	}
+
+	createTemporaryCode, err := controllerInstance.CreateTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: accountUUID.String(),
+		Type:        modelDatabase.TemporaryCodeTypeAuthTokenCode,
+	})
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error CreateTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	codeUUIDEncryptBase64, err := controller.EncryptTemporaryCode(createTemporaryCode.CodeUUID.String())
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackV2Handler()]->Error EncryptTemporaryCode()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	databaseTx.Commit()
+
+	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, true, codeUUIDEncryptBase64))
 }
 
 func RequestConnectAppleOAuthHandler(c *gin.Context) {
