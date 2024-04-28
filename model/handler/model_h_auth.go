@@ -42,8 +42,17 @@ type ResponseVerifyTokenOAuth struct {
 		Name        string `json:"name,omitempty"`
 		Picture     string `json:"picture,omitempty"`
 	} `json:"line"`
+	Apple struct {
+		IsConnected bool   `json:"connected"`
+		Name        string `json:"name,omitempty"`
+		Picture     string `json:"picture,omitempty"`
+	} `json:"apple"`
 }
 
 type RequestInternalOAuthLogin struct {
 	UserID string `json:"user_id" validate:"required"`
+}
+
+type RequestExchangeCodeToAuthToken struct {
+	Code string `json:"code" validate:"required,base64url"`
 }

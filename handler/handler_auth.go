@@ -257,6 +257,22 @@ func VerifyTokenHandler(c *gin.Context) {
 		response.OAuth.Line.Picture = lineAccountOauth.Picture
 	}
 
+	appleAccountOauth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderApple, modelController.ParamCheckAccountOAuth{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+	})
+	if err != nil {
+		logger.Error("[Handler][VerifyTokenHandler()]->Error CheckAccountOAuth() - Apple", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !appleAccountOauth.IsNotFound {
+		response.OAuth.Apple.IsConnected = true
+		response.OAuth.Apple.Name = appleAccountOauth.Name
+		response.OAuth.Apple.Picture = ""
+	}
+
 	response.Name = accountInfo.Name
 	response.Email = accountInfo.Email
 	response.EmailVerified = accountInfo.EmailVerified
@@ -506,6 +522,119 @@ func InternalLineLoginHandler(c *gin.Context) {
 	})
 	if err != nil {
 		logger.Error("[Handler][InternalLineLoginHandler()]->Error Generate Access Token", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	databaseTx.Commit()
+
+	response.TokenType = generateAccessToken.TokenType
+	response.AccessToken = generateAccessToken.AccessToken
+	response.AccessTokenExpireIn = time.Duration(createAuthSession.ExtiredIn.Seconds())
+
+	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+		ResponseCode: http.StatusOK,
+		Data:         response,
+	})
+}
+
+func ExchangeCodeToAuthTokenV2Handler(c *gin.Context) {
+	var request modelHandler.RequestExchangeCodeToAuthToken
+	var response modelHandler.ResponseAccessToken
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, errorFieldList, validatorError := PTGUvalidator.Validate(request)
+	if validatorError != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        errorFieldList,
+		})
+		return
+	}
+
+	databaseTx := database.DB.Begin()
+	controllerInstance := controller.NewController(databaseTx)
+	defer databaseTx.Rollback()
+
+	codeUUID, err := controller.DecryptTemporaryCode(request.Code)
+	if err != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error DecryptTemporaryCode()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	checkTemporaryCode, err := controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
+		CodeUUID: codeUUID,
+		Type:     modelDatabase.TemporaryCodeTypeAuthTokenCode,
+	})
+	if err != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        "Invalid Code or Code Expired",
+		})
+		return
+	}
+
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: checkTemporaryCode.AccountUUID.String(),
+		Type:        modelDatabase.TemporaryCodeTypeAuthTokenCode,
+	})
+	if err != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	clearAuthSessionErr := controllerInstance.DeleteAuthSessionByAccountUUID(checkTemporaryCode.AccountUUID.String())
+	if clearAuthSessionErr != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error Clear Auth Session", logger.Field("error", clearAuthSessionErr.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	createAuthSession, err := controllerInstance.CreateAuthSession(checkTemporaryCode.AccountUUID.String())
+	if err != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error Create Auth Session", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+
+	generateAccessToken, err := controller.GenerateAccessToken(modelController.ParamGenerateAccessToken{
+		SessionUUID: createAuthSession.SessionUUID.String(),
+		ExpiredAt:   createAuthSession.ExpiredAt,
+	})
+	if err != nil {
+		logger.Error("[Handler][ExchangeCodeToAuthTokenV2Handler()]->Error Generate Access Token", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})

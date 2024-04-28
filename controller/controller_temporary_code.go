@@ -19,6 +19,7 @@ const (
 	TemporaryCodeTypeEmailVerificationExpiredIn = time.Minute * 60 * 24
 	TemporaryCodeTypePasswordResetExpiredIn     = time.Minute * 15
 	TemporaryCodeTypeOAuthStateExpiredIn        = time.Minute * 5
+	TemporaryCodeTypeAuthTokenCodeExpiredIn     = time.Minute * 5
 )
 
 func (receiver ControllerReceiverArgument) CreateTemporaryCode(param modelController.ParamTemporaryCode) (returnData modelController.ReturnCreateTemporaryCode, err error) {
@@ -79,8 +80,14 @@ func (receiver ControllerReceiverArgument) CheckTemporaryCode(param modelControl
 			return returnData, nil
 		}
 	}
-	if repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateLine || repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateGoogle {
+	if repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateLine || repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateGoogle || repoData.Data.Type == modelDatabase.TemporaryCodeTypeOAuthStateApple {
 		if time.Now().After(repoData.Data.CreatedAt.Add(TemporaryCodeTypeOAuthStateExpiredIn)) {
+			returnData.IsExpired = true
+			return returnData, nil
+		}
+	}
+	if repoData.Data.Type == modelDatabase.TemporaryCodeTypeAuthTokenCode {
+		if time.Now().After(repoData.Data.CreatedAt.Add(TemporaryCodeTypeAuthTokenCodeExpiredIn)) {
 			returnData.IsExpired = true
 			return returnData, nil
 		}

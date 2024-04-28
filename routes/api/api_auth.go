@@ -55,6 +55,21 @@ func InitAuthAPI(router *gin.RouterGroup) {
 			}
 		}
 
+		apple := r.Group("/apple")
+		{
+			public := apple.Group("")
+			{
+				public.POST("/callback", handler.AppleCallbackHandler)
+			}
+			external := apple.Group("").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
+			{
+				middlewareUser := middleware.NewMiddleware(middleware.MiddlewareReceiverArgument{})
+				user := external.Use(middlewareUser.CheckAccount)
+				user.POST("/connect", handler.RequestConnectAppleOAuthHandler)
+				user.POST("/disconnect", handler.RequestDisconnectAppleOAuthHandler)
+			}
+		}
+
 		r.POST("/email_verify", middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken, handler.RequestEmailVerifyHandler)
 
 		authWithAccessToken := r.Group("/token").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
@@ -63,5 +78,30 @@ func InitAuthAPI(router *gin.RouterGroup) {
 			authWithAccessToken.POST("/refresh", handler.RefreshTokenHandler)
 			authWithAccessToken.POST("/revoke", handler.RevokeTokenHandler)
 		}
+	}
+}
+
+func InitAuthAPIv2(router *gin.RouterGroup) {
+	r := router.Group("/auth")
+	{
+		google := r.Group("/google")
+		{
+			google.GET("/login", handler.GoogleLoginV2Handler)
+			google.GET("/callback", handler.GoogleLoginCallbackV2Handler)
+		}
+
+		line := r.Group("/line")
+		{
+			line.GET("/login", handler.LineLoginV2Handler)
+			line.GET("/callback", handler.LineLoginCallbackV2Handler)
+		}
+
+		apple := r.Group("/apple")
+		{
+			apple.GET("/login", handler.AppleLoginV2Handler)
+			apple.POST("/callback", handler.AppleLoginCallbackV2Handler)
+		}
+
+		r.POST("/token/exchange", handler.ExchangeCodeToAuthTokenV2Handler)
 	}
 }
