@@ -141,9 +141,10 @@ func RegisterHandler(c *gin.Context) {
 	defer databaseTx.Rollback()
 
 	createAccount, err := controllerInstance.CreateAccount(modelController.ParamCreateAccount{
-		Name:     request.Name,
-		Email:    request.Email,
-		Password: request.Password,
+		Name:               request.Name,
+		Email:              request.Email,
+		Password:           request.Password,
+		EmailVerifyApprove: false,
 	})
 	if err != nil {
 		logger.Error("[Handler][RegisterHandler()]->Error Create Account", logger.Field("error", err.Error()))

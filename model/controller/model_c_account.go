@@ -3,9 +3,10 @@ package modelController
 import "github.com/google/uuid"
 
 type ParamCreateAccount struct {
-	Name     string
-	Email    string
-	Password string
+	Name               string
+	Email              string
+	Password           string
+	EmailVerifyApprove bool
 }
 
 type ReturnCreateAccount struct {

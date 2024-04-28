@@ -447,9 +447,10 @@ func GoogleLoginCallbackV2Handler(c *gin.Context) {
 			return
 		}
 		createAccount, err := controllerInstance.CreateAccount(modelController.ParamCreateAccount{
-			Name:     googleOAuthUserInfo.Name,
-			Email:    googleOAuthUserInfo.Email,
-			Password: password,
+			Name:               googleOAuthUserInfo.Name,
+			Email:              googleOAuthUserInfo.Email,
+			Password:           password,
+			EmailVerifyApprove: true,
 		})
 		if err != nil {
 			logger.Error("[Handler][GoogleCallbackV2Handler()]->Error Create Account", logger.Field("error", err.Error()))
@@ -591,9 +592,10 @@ func LineLoginCallbackV2Handler(c *gin.Context) {
 			return
 		}
 		createAccount, err := controllerInstance.CreateAccount(modelController.ParamCreateAccount{
-			Name:     lineOAuthUserInfo.Name,
-			Email:    lineOAuthUserInfo.Email,
-			Password: password,
+			Name:               lineOAuthUserInfo.Name,
+			Email:              lineOAuthUserInfo.Email,
+			Password:           password,
+			EmailVerifyApprove: true,
 		})
 		if err != nil {
 			logger.Error("[Handler][LineCallbackV2Handler()]->Error Create Account", logger.Field("error", err.Error()))
@@ -749,9 +751,10 @@ func AppleLoginCallbackV2Handler(c *gin.Context) {
 			return
 		}
 		createAccount, err := controllerInstance.CreateAccount(modelController.ParamCreateAccount{
-			Name:     appleOAuthUserInfo.Name,
-			Email:    appleOAuthUserInfo.Email,
-			Password: password,
+			Name:               appleOAuthUserInfo.Name,
+			Email:              appleOAuthUserInfo.Email,
+			Password:           password,
+			EmailVerifyApprove: true,
 		})
 		if err != nil {
 			logger.Error("[Handler][AppleCallbackV2Handler()]->Error Create Account", logger.Field("error", err.Error()))

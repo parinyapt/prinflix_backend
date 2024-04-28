@@ -35,7 +35,7 @@ func (receiver ControllerReceiverArgument) CreateAccount(param modelController.P
 		UUID:          accountUUID,
 		Name:          param.Name,
 		Email:         param.Email,
-		EmailVerified: false,
+		EmailVerified: param.EmailVerifyApprove,
 		Password:      passwordHash,
 		Status:        "active",
 		Role:          "user",
