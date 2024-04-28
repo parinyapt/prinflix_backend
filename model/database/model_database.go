@@ -29,6 +29,10 @@ const (
 	OauthStateProviderLine   = "line"
 	OauthStateProviderGoogle = "google"
 	OauthStateProviderApple  = "apple"
+
+	ReviewRatingGood = 3
+	ReviewRatingFair = 2
+	ReviewRatingBad  = 1
 )
 
 type Account struct {
@@ -152,4 +156,16 @@ type OauthState struct {
 
 func (OauthState) TableName() string {
 	return utilsDatabase.GenerateTableName("oauth_state")
+}
+
+type Review struct {
+	AccountUUID uuid.UUID `gorm:"column:review_account_uuid;primary_key;not null"`
+	MovieUUID   uuid.UUID `gorm:"column:review_movie_uuid;primary_key;not null"`
+	Rating      uint      `gorm:"column:review_rating;not null"`
+	CreatedAt   time.Time `gorm:"column:review_created_at;not null"`
+	UpdatedAt   time.Time `gorm:"column:review_updated_at;not null"`
+}
+
+func (Review) TableName() string {
+	return utilsDatabase.GenerateTableName("review")
 }
