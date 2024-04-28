@@ -21,6 +21,7 @@ func (receiver ControllerReceiverArgument) CreateAccount(param modelController.P
 
 	if repoData.IsFound {
 		returnData.IsExist = true
+		returnData.UUID = repoData.Data.UUID
 		return returnData, nil
 	}
 
