@@ -17,11 +17,18 @@ const (
 
 	AccountOAuthProviderLine   = "line"
 	AccountOAuthProviderGoogle = "google"
+	AccountOAuthProviderApple  = "apple"
 
 	TemporaryCodeTypeEmailVerification = "email_verification"
 	TemporaryCodeTypePasswordReset     = "password_reset"
 	TemporaryCodeTypeOAuthStateLine    = "oauth_state_line"
 	TemporaryCodeTypeOAuthStateGoogle  = "oauth_state_google"
+	TemporaryCodeTypeOAuthStateApple   = "oauth_state_apple"
+	TemporaryCodeTypeAuthTokenCode     = "auth_token_code"
+
+	OauthStateProviderLine   = "line"
+	OauthStateProviderGoogle = "google"
+	OauthStateProviderApple  = "apple"
 )
 
 type Account struct {
@@ -54,7 +61,7 @@ func (AuthSession) TableName() string {
 
 type AccountOAuth struct {
 	AccountUUID uuid.UUID `gorm:"column:account_oauth_account_uuid;primary_key;not null"`
-	Provider    string    `gorm:"column:account_oauth_provider;primary_key;type:enum('line', 'google');not null"`
+	Provider    string    `gorm:"column:account_oauth_provider;primary_key;type:enum('line', 'google', 'apple');not null"`
 	UserID      string    `gorm:"column:account_oauth_user_id;not null"`
 	UserName    string    `gorm:"column:account_oauth_user_name;not null"`
 	UserEmail   string    `gorm:"column:account_oauth_user_email;not null"`
@@ -69,7 +76,7 @@ func (AccountOAuth) TableName() string {
 type TemporaryCode struct {
 	UUID        uuid.UUID `gorm:"column:auth_temporary_code_uuid;type:uuid;primary_key;not null"`
 	AccountUUID uuid.UUID `gorm:"column:auth_temporary_code_account_uuid;not null"`
-	Type        string    `gorm:"column:auth_temporary_code_type;type:enum('email_verification', 'password_reset', 'oauth_state_line', 'oauth_state_google');not null"`
+	Type        string    `gorm:"column:auth_temporary_code_type;type:enum('email_verification', 'password_reset', 'oauth_state_line', 'oauth_state_google', 'oauth_state_apple', 'auth_token_code');not null"`
 	CreatedAt   time.Time `gorm:"column:auth_temporary_code_created_at;type:timestamp;not null"`
 }
 
@@ -135,4 +142,14 @@ type WatchHistory struct {
 
 func (WatchHistory) TableName() string {
 	return utilsDatabase.GenerateTableName("watch_history")
+}
+
+type OauthState struct {
+	UUID      uuid.UUID `gorm:"column:oauth_state_uuid;primary_key;not null"`
+	Provider  string    `gorm:"column:oauth_state_provider;type:enum('line', 'google', 'apple');not null"`
+	CreatedAt time.Time `gorm:"column:oauth_state_created_at;not null"`
+}
+
+func (OauthState) TableName() string {
+	return utilsDatabase.GenerateTableName("oauth_state")
 }
