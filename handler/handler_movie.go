@@ -107,20 +107,22 @@ func GetMovieListHandler(c *gin.Context) {
 
 	for _, movie := range getManyMovie.Data {
 		response.ResultData = append(response.ResultData, modelHandler.ResponseMovieData{
-			MovieUUID:            movie.MovieUUID,
-			MovieThumbnail:       movie.MovieThumbnail,
-			MovieTitle:           movie.MovieTitle,
-			MovieDescription:     movie.MovieDescription,
-			MovieCategoryID:      movie.MovieCategoryID,
-			MovieCategoryName:    movie.MovieCategoryName,
-			IsFavorite:           movie.IsFavorite,
-			ReviewTotalCount:     movie.ReviewTotalCount,
-			ReviewGoodCount:      movie.ReviewGoodCount,
-			ReviewFairCount:      movie.ReviewFairCount,
-			ReviewBadCount:       movie.ReviewBadCount,
-			ReviewGoodPercentage: movie.ReviewGoodPercentage,
-			ReviewFairPercentage: movie.ReviewFairPercentage,
-			ReviewBadPercentage:  movie.ReviewBadPercentage,
+			MovieUUID:         movie.MovieUUID,
+			MovieThumbnail:    movie.MovieThumbnail,
+			MovieTitle:        movie.MovieTitle,
+			MovieDescription:  movie.MovieDescription,
+			MovieCategoryID:   movie.MovieCategoryID,
+			MovieCategoryName: movie.MovieCategoryName,
+			IsFavorite:        movie.IsFavorite,
+			Review: modelHandler.ResponseMovieDataReview{
+				ReviewTotalCount:     movie.ReviewTotalCount,
+				ReviewGoodCount:      movie.ReviewGoodCount,
+				ReviewFairCount:      movie.ReviewFairCount,
+				ReviewBadCount:       movie.ReviewBadCount,
+				ReviewGoodPercentage: movie.ReviewGoodPercentage,
+				ReviewFairPercentage: movie.ReviewFairPercentage,
+				ReviewBadPercentage:  movie.ReviewBadPercentage,
+			},
 		})
 	}
 
@@ -187,13 +189,13 @@ func GetMovieDetailHandler(c *gin.Context) {
 	response.MovieCategoryID = getMovieDetail.MovieCategoryID
 	response.MovieCategoryName = getMovieDetail.MovieCategoryName
 	response.IsFavorite = getMovieDetail.IsFavorite
-	response.ReviewTotalCount = getMovieDetail.ReviewTotalCount
-	response.ReviewGoodCount = getMovieDetail.ReviewGoodCount
-	response.ReviewFairCount = getMovieDetail.ReviewFairCount
-	response.ReviewBadCount = getMovieDetail.ReviewBadCount
-	response.ReviewGoodPercentage = getMovieDetail.ReviewGoodPercentage
-	response.ReviewFairPercentage = getMovieDetail.ReviewFairPercentage
-	response.ReviewBadPercentage = getMovieDetail.ReviewBadPercentage
+	response.Review.ReviewTotalCount = getMovieDetail.ReviewTotalCount
+	response.Review.ReviewGoodCount = getMovieDetail.ReviewGoodCount
+	response.Review.ReviewFairCount = getMovieDetail.ReviewFairCount
+	response.Review.ReviewBadCount = getMovieDetail.ReviewBadCount
+	response.Review.ReviewGoodPercentage = getMovieDetail.ReviewGoodPercentage
+	response.Review.ReviewFairPercentage = getMovieDetail.ReviewFairPercentage
+	response.Review.ReviewBadPercentage = getMovieDetail.ReviewBadPercentage
 
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,

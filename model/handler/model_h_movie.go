@@ -19,20 +19,24 @@ type ResponseGetMovieList struct {
 }
 
 type ResponseMovieData struct {
-	MovieUUID            uuid.UUID `json:"uuid"`
-	MovieThumbnail       string    `json:"thumbnail"`
-	MovieTitle           string    `json:"title"`
-	MovieDescription     string    `json:"description"`
-	MovieCategoryID      uint      `json:"category_id"`
-	MovieCategoryName    string    `json:"category_name"`
-	IsFavorite           bool      `json:"is_favorite"`
-	ReviewTotalCount     int64     `json:"review_total_count"`
-	ReviewGoodCount      int64     `json:"review_good_count"`
-	ReviewFairCount      int64     `json:"review_fair_count"`
-	ReviewBadCount       int64     `json:"review_bad_count"`
-	ReviewGoodPercentage float64   `json:"review_good_percentage"`
-	ReviewFairPercentage float64   `json:"review_fair_percentage"`
-	ReviewBadPercentage  float64   `json:"review_bad_percentage"`
+	MovieUUID         uuid.UUID               `json:"uuid"`
+	MovieThumbnail    string                  `json:"thumbnail"`
+	MovieTitle        string                  `json:"title"`
+	MovieDescription  string                  `json:"description"`
+	MovieCategoryID   uint                    `json:"category_id"`
+	MovieCategoryName string                  `json:"category_name"`
+	IsFavorite        bool                    `json:"is_favorite"`
+	Review            ResponseMovieDataReview `json:"review"`
+}
+
+type ResponseMovieDataReview struct {
+	ReviewTotalCount     int64   `json:"total_count"`
+	ReviewGoodCount      int64   `json:"good_count"`
+	ReviewFairCount      int64   `json:"fair_count"`
+	ReviewBadCount       int64   `json:"bad_count"`
+	ReviewGoodPercentage float64 `json:"good_percentage"`
+	ReviewFairPercentage float64 `json:"fair_percentage"`
+	ReviewBadPercentage  float64 `json:"bad_percentage"`
 }
 
 type UriParamMovieUUIDonly struct {
