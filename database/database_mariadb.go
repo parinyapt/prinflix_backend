@@ -60,6 +60,7 @@ func initializeConnectMariaDB() {
 		modelDatabase.WatchHistory{},
 		modelDatabase.OauthState{},
 		modelDatabase.Review{},
+		modelDatabase.Comment{},
 	)
 	if err != nil {
 		logger.Fatal("Failed to AutoMigrate database", logger.Field("error", err))

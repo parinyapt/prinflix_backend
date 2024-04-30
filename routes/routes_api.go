@@ -32,5 +32,6 @@ func configApiRoutes(router *gin.Engine) {
 	v2 := router.Group("/v2")
 	{
 		APIroutes.InitAuthAPIv2(v2)
+		APIroutes.InitMovieAPIv2(v2)
 	}
 }

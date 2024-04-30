@@ -40,5 +40,5 @@ type ResponseMovieDataReview struct {
 }
 
 type UriParamMovieUUIDonly struct {
-	MovieUUID string `uri:"movie_uuid" binding:"required,uuid"`
+	MovieUUID string `uri:"movie_uuid" validate:"required,uuid"`
 }

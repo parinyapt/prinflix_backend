@@ -28,3 +28,14 @@ func InitMovieAPI(router *gin.RouterGroup) {
 		}
 	}
 }
+
+func InitMovieAPIv2(router *gin.RouterGroup) {
+	r := router.Group("/movie").Use(middleware.GetHeaderAuthorizationToken, middleware.AuthWithAccessToken)
+	{
+		middlewareUser := middleware.NewMiddleware(middleware.MiddlewareReceiverArgument{})
+		user := r.Use(middlewareUser.CheckAccount)
+		user.GET("/:movie_uuid/comment", handler.GetMovieCommentHandler)
+		user.POST("/:movie_uuid/comment", handler.AddMovieCommentHandler)
+		user.DELETE("/:movie_uuid/comment/:comment_uuid", handler.DeleteMovieCommentHandler)
+	}
+}

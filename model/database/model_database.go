@@ -169,3 +169,15 @@ type Review struct {
 func (Review) TableName() string {
 	return utilsDatabase.GenerateTableName("review")
 }
+
+type Comment struct {
+	UUID        uuid.UUID `gorm:"column:comment_uuid;primary_key;not null"`
+	AccountUUID uuid.UUID `gorm:"column:comment_account_uuid;not null"`
+	MovieUUID   uuid.UUID `gorm:"column:comment_movie_uuid;not null"`
+	Comment     string    `gorm:"column:comment_content;not null"`
+	CreatedAt   time.Time `gorm:"column:comment_created_at;not null"`
+}
+
+func (Comment) TableName() string {
+	return utilsDatabase.GenerateTableName("comment")
+}
