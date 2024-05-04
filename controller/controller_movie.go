@@ -186,13 +186,74 @@ func (receiver ControllerReceiverArgument) GetAllRecommendMovie(accountUUID stri
 	repoData, repoErr := repoInstance.FetchManyMovie(accountUUIDparse, modelRepository.ParamFetchManyMovie{
 		Pagination: modelRepository.ParamPagination{
 			Page:        1,
-			Limit:       6,
+			Limit:       5,
 			SortField:   "RAND()",
 			SortOrderBy: "",
 		},
 	})
 	if repoErr != nil {
 		return returnData, errors.Wrap(repoErr, "[Controller][GetAllRecommendMovie()]->Fail to fetch many movie")
+	}
+	if !repoData.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
+
+	for _, data := range repoData.Data {
+		thumbnailURL, err := storage.GenerateRoutePath(1, storage.MovieThumbnailRoutePath, map[string]string{
+			"movie_uuid": data.MovieUUID.String(),
+		})
+		if err != nil {
+			thumbnailURL = ""
+		}
+
+		returnData.Data = append(returnData.Data, modelController.ReturnGetManyMovieData{
+			MovieUUID:         data.MovieUUID,
+			MovieThumbnail:    thumbnailURL,
+			MovieTitle:        data.MovieTitle,
+			MovieDescription:  data.MovieDescription,
+			MovieCategoryID:   data.MovieCategoryID,
+			MovieCategoryName: data.MovieCategoryName,
+			IsFavorite:        data.IsFavorite,
+		})
+	}
+
+	returnData.Pagination.TotalData = repoData.Pagination.TotalData
+	returnData.Pagination.TotalPage = repoData.Pagination.TotalPage
+	returnData.Pagination.Page = repoData.Pagination.Page
+	returnData.Pagination.Limit = repoData.Pagination.Limit
+
+	return returnData, nil
+}
+
+func (receiver ControllerReceiverArgument) GetRecommendMovieByMostViewCategory(accountUUID string) (returnData modelController.ReturnGetManyMovie, err error) {
+	accountUUIDparse, err := utilsUUID.ParseUUIDfromString(accountUUID)
+	if err != nil {
+		return returnData, errors.Wrap(err, "[Controller][GetRecommendMovieByMostViewCategory()]->Fail to parse account uuid")
+	}
+
+	repoInstance := repository.NewRepository(receiver.databaseTX)
+
+	repoDataMostViewCategory, repoErr := repoInstance.FetchOneAccountMostViewCategory(accountUUIDparse)
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][GetRecommendMovieByMostViewCategory()]->Fail to fetch one account most view category")
+	}
+	if !repoDataMostViewCategory.IsFound {
+		returnData.IsNotFound = true
+		return returnData, nil
+	}
+
+	repoData, repoErr := repoInstance.FetchManyMovie(accountUUIDparse, modelRepository.ParamFetchManyMovie{
+		Pagination: modelRepository.ParamPagination{
+			Page:        1,
+			Limit:       5,
+			SortField:   "RAND()",
+			SortOrderBy: "",
+		},
+		CategoryID: repoDataMostViewCategory.Data.CategoryId,
+	})
+	if repoErr != nil {
+		return returnData, errors.Wrap(repoErr, "[Controller][GetRecommendMovieByMostViewCategory()]->Fail to fetch many movie")
 	}
 	if !repoData.IsFound {
 		returnData.IsNotFound = true

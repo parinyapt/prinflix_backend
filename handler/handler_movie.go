@@ -240,22 +240,33 @@ func GetMovieCategoryListHandler(c *gin.Context) {
 func GetRecommendMovieListHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(database.DB)
 
-	getManyMovie, err := controllerInstance.GetAllRecommendMovie(c.GetString("ACCOUNT_UUID"))
+	var getManyMovie modelController.ReturnGetManyMovie
+	getManyMovie, err := controllerInstance.GetRecommendMovieByMostViewCategory(c.GetString("ACCOUNT_UUID"))
 	if err != nil {
-		logger.Error("[Handler][GetRecommendMovieListHandler()]->Error GetAllFavoriteMovie()", logger.Field("error", err.Error()))
+		logger.Error("[Handler][GetRecommendMovieListHandler()]->Error GetRecommendMovieByMostViewCategory()", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusInternalServerError,
 		})
 		return
 	}
 	if getManyMovie.IsNotFound {
-		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
-			ResponseCode: http.StatusNotFound,
-			Error:        "Movie Not Found",
-		})
-		return
+		getManyMovie, err = controllerInstance.GetAllRecommendMovie(c.GetString("ACCOUNT_UUID"))
+		if err != nil {
+			logger.Error("[Handler][GetRecommendMovieListHandler()]->Error GetAllFavoriteMovie()", logger.Field("error", err.Error()))
+			utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+				ResponseCode: http.StatusInternalServerError,
+			})
+			return
+		}
+		if getManyMovie.IsNotFound {
+			utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+				ResponseCode: http.StatusNotFound,
+				Error:        "Movie Not Found",
+			})
+			return
+		}
 	}
-
+	
 	var response modelHandler.ResponseGetMovieList
 	response.ResultPagination.TotalData = 6
 	response.ResultPagination.TotalPage = 1

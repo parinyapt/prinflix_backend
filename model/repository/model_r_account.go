@@ -29,3 +29,12 @@ type ParamUpdateAccount struct {
 	Image         bool
 	Role          string
 }
+
+type ResultFetchOneAccountMostViewCategory struct {
+	IsFound bool
+	Data    DBResultFetchOneAccountMostViewCategory
+}
+
+type DBResultFetchOneAccountMostViewCategory struct {
+	CategoryId uint
+}
