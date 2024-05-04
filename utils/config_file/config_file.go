@@ -9,8 +9,10 @@ const (
 	EmailVerifyFailPagePath     = "email_verification.fail"
 	ResetPasswordPagePath       = "reset_password_page"
 
-	AppLoginOAuthSuccessPagePath = "oauth.success"
-	AppLoginOAuthFailPagePath    = "oauth.fail"
+	AppLoginOAuthSuccessPagePath   = "oauth.success"
+	AppLoginOAuthFailPagePath      = "oauth.fail"
+	AppConnectOAuthSuccessPagePath = "connect.success"
+	AppConnectOAuthFailPagePath    = "connect.fail"
 )
 
 func GetConfigDomain() []string {

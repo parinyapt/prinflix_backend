@@ -19,12 +19,15 @@ const (
 	AccountOAuthProviderGoogle = "google"
 	AccountOAuthProviderApple  = "apple"
 
-	TemporaryCodeTypeEmailVerification = "email_verification"
-	TemporaryCodeTypePasswordReset     = "password_reset"
-	TemporaryCodeTypeOAuthStateLine    = "oauth_state_line"
-	TemporaryCodeTypeOAuthStateGoogle  = "oauth_state_google"
-	TemporaryCodeTypeOAuthStateApple   = "oauth_state_apple"
-	TemporaryCodeTypeAuthTokenCode     = "auth_token_code"
+	TemporaryCodeTypeEmailVerification   = "email_verification"
+	TemporaryCodeTypePasswordReset       = "password_reset"
+	TemporaryCodeTypeOAuthStateLine      = "oauth_state_line"
+	TemporaryCodeTypeOAuthStateGoogle    = "oauth_state_google"
+	TemporaryCodeTypeOAuthStateApple     = "oauth_state_apple"
+	TemporaryCodeTypeAppOAuthStateLine   = "oauth_state_line_app"
+	TemporaryCodeTypeAppOAuthStateGoogle = "oauth_state_google_app"
+	TemporaryCodeTypeAppOAuthStateApple  = "oauth_state_apple_app"
+	TemporaryCodeTypeAuthTokenCode       = "auth_token_code"
 
 	OauthStateProviderLine   = "line"
 	OauthStateProviderGoogle = "google"
@@ -80,7 +83,7 @@ func (AccountOAuth) TableName() string {
 type TemporaryCode struct {
 	UUID        uuid.UUID `gorm:"column:auth_temporary_code_uuid;type:uuid;primary_key;not null"`
 	AccountUUID uuid.UUID `gorm:"column:auth_temporary_code_account_uuid;not null"`
-	Type        string    `gorm:"column:auth_temporary_code_type;type:enum('email_verification', 'password_reset', 'oauth_state_line', 'oauth_state_google', 'oauth_state_apple', 'auth_token_code');not null"`
+	Type        string    `gorm:"column:auth_temporary_code_type;type:enum('email_verification', 'password_reset', 'oauth_state_line', 'oauth_state_google', 'oauth_state_apple', 'auth_token_code', 'oauth_state_line_app', 'oauth_state_google_app', 'oauth_state_apple_app');not null"`
 	CreatedAt   time.Time `gorm:"column:auth_temporary_code_created_at;type:timestamp;not null"`
 }
 

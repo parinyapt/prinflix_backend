@@ -22,6 +22,31 @@ import (
 
 // Connect Google OAuth
 func RequestConnectGoogleOAuthHandler(c *gin.Context) {
+	var queryParam modelHandler.QueryParamOAuthConnect
+
+	if err := c.ShouldBind(&queryParam); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Handler][RequestConnectGoogleOAuthHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        "Invalid Parameter",
+		})
+		return
+	}
+
 	var response modelHandler.ResponseRequestConnectOAuth
 
 	databaseTx := database.DB.Begin()
@@ -57,10 +82,27 @@ func RequestConnectGoogleOAuthHandler(c *gin.Context) {
 		})
 		return
 	}
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+		Type:        modelDatabase.TemporaryCodeTypeAppOAuthStateGoogle,
+	})
+	if err != nil {
+		logger.Error("[Handler][RequestConnectGoogleOAuthHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
 
+	var typeConnect string
+	if queryParam.IsApplication {
+		typeConnect = modelDatabase.TemporaryCodeTypeAppOAuthStateGoogle
+	} else {
+		typeConnect = modelDatabase.TemporaryCodeTypeOAuthStateGoogle
+	}
 	createTemporaryCode, err := controllerInstance.CreateTemporaryCode(modelController.ParamTemporaryCode{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
-		Type:        modelDatabase.TemporaryCodeTypeOAuthStateGoogle,
+		Type:        typeConnect,
 	})
 	if err != nil {
 		logger.Error("[Handler][RequestConnectGoogleOAuthHandler()]->Error CreateTemporaryCode()", logger.Field("error", err.Error()))
@@ -136,23 +178,37 @@ func GoogleCallbackHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
+	var checkType string = modelDatabase.TemporaryCodeTypeOAuthStateGoogle
+	var checkTemporaryCode modelController.ReturnCheckTemporaryCode
 	checkTemporaryCode, err := controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
 		CodeUUID: queryParam.State,
-		Type:     modelDatabase.TemporaryCodeTypeOAuthStateGoogle,
+		Type:     checkType,
 	})
 	if err != nil {
 		logger.Error("[Handler][GoogleCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
-	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
+	if checkTemporaryCode.IsNotFound {
+		checkType = modelDatabase.TemporaryCodeTypeAppOAuthStateGoogle
+		checkTemporaryCode, err = controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
+			CodeUUID: queryParam.State,
+			Type:     checkType,
+		})
+		if err != nil {
+			logger.Error("[Handler][GoogleCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
+			return
+		}
+	}
+	if checkTemporaryCode.IsExpired {
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		return
 	}
 
 	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
 		AccountUUID: checkTemporaryCode.AccountUUID.String(),
-		Type:        modelDatabase.TemporaryCodeTypeOAuthStateGoogle,
+		Type:        checkType,
 	})
 	if err != nil {
 		logger.Error("[Handler][GoogleCallbackHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
@@ -183,11 +239,40 @@ func GoogleCallbackHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, true))
+	if checkType == modelDatabase.TemporaryCodeTypeAppOAuthStateGoogle {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateAppOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, true))
+	} else {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, true))
+	}
 }
 
 // Connect Line OAuth
 func RequestConnectLineOAuthHandler(c *gin.Context) {
+	var queryParam modelHandler.QueryParamOAuthConnect
+
+	if err := c.ShouldBind(&queryParam); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Handler][RequestConnectLineOAuthHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        "Invalid Parameter",
+		})
+		return
+	}
+
 	var response modelHandler.ResponseRequestConnectOAuth
 
 	databaseTx := database.DB.Begin()
@@ -223,10 +308,27 @@ func RequestConnectLineOAuthHandler(c *gin.Context) {
 		})
 		return
 	}
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+		Type:        modelDatabase.TemporaryCodeTypeAppOAuthStateLine,
+	})
+	if err != nil {
+		logger.Error("[Handler][RequestConnectLineOAuthHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
 
+	var typeConnect string
+	if queryParam.IsApplication {
+		typeConnect = modelDatabase.TemporaryCodeTypeAppOAuthStateLine
+	} else {
+		typeConnect = modelDatabase.TemporaryCodeTypeOAuthStateLine
+	}
 	createTemporaryCode, err := controllerInstance.CreateTemporaryCode(modelController.ParamTemporaryCode{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
-		Type:        modelDatabase.TemporaryCodeTypeOAuthStateLine,
+		Type:        typeConnect,
 	})
 	if err != nil {
 		logger.Error("[Handler][RequestConnectLineOAuthHandler()]->Error CreateTemporaryCode()", logger.Field("error", err.Error()))
@@ -302,16 +404,30 @@ func LineCallbackHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
+	var checkType string = modelDatabase.TemporaryCodeTypeOAuthStateLine
+	var checkTemporaryCode modelController.ReturnCheckTemporaryCode
 	checkTemporaryCode, err := controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
 		CodeUUID: queryParam.State,
-		Type:     modelDatabase.TemporaryCodeTypeOAuthStateLine,
+		Type:     checkType,
 	})
 	if err != nil {
 		logger.Error("[Handler][LineCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
 		return
 	}
-	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
+	if checkTemporaryCode.IsNotFound {
+		checkType = modelDatabase.TemporaryCodeTypeAppOAuthStateLine
+		checkTemporaryCode, err = controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
+			CodeUUID: queryParam.State,
+			Type:     checkType,
+		})
+		if err != nil {
+			logger.Error("[Handler][LineCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+			return
+		}
+	}
+	if checkTemporaryCode.IsExpired {
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
 		return
 	}
@@ -349,7 +465,11 @@ func LineCallbackHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, true))
+	if checkType == modelDatabase.TemporaryCodeTypeAppOAuthStateLine {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateAppOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, true))
+	} else {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, true))
+	}
 }
 
 // Google OAuth Login
@@ -803,6 +923,31 @@ func AppleLoginCallbackV2Handler(c *gin.Context) {
 
 // Connect Apple OAuth
 func RequestConnectAppleOAuthHandler(c *gin.Context) {
+	var queryParam modelHandler.QueryParamOAuthConnect
+
+	if err := c.ShouldBind(&queryParam); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+		})
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Handler][RequestConnectAppleOAuthHandler()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			Error:        "Invalid Parameter",
+		})
+		return
+	}
+
 	var response modelHandler.ResponseRequestConnectOAuth
 
 	databaseTx := database.DB.Begin()
@@ -838,10 +983,27 @@ func RequestConnectAppleOAuthHandler(c *gin.Context) {
 		})
 		return
 	}
+	err = controllerInstance.DeleteTemporaryCode(modelController.ParamTemporaryCode{
+		AccountUUID: c.GetString("ACCOUNT_UUID"),
+		Type:        modelDatabase.TemporaryCodeTypeAppOAuthStateApple,
+	})
+	if err != nil {
+		logger.Error("[Handler][RequestConnectAppleOAuthHandler()]->Error DeleteTemporaryCode()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		return
+	}
 
+	var typeConnect string
+	if queryParam.IsApplication {
+		typeConnect = modelDatabase.TemporaryCodeTypeAppOAuthStateApple
+	} else {
+		typeConnect = modelDatabase.TemporaryCodeTypeOAuthStateApple
+	}
 	createTemporaryCode, err := controllerInstance.CreateTemporaryCode(modelController.ParamTemporaryCode{
 		AccountUUID: c.GetString("ACCOUNT_UUID"),
-		Type:        modelDatabase.TemporaryCodeTypeOAuthStateApple,
+		Type:        typeConnect,
 	})
 	if err != nil {
 		logger.Error("[Handler][RequestConnectAppleOAuthHandler()]->Error CreateTemporaryCode()", logger.Field("error", err.Error()))
@@ -917,16 +1079,30 @@ func AppleCallbackHandler(c *gin.Context) {
 	controllerInstance := controller.NewController(databaseTx)
 	defer databaseTx.Rollback()
 
+	var checkType string = modelDatabase.TemporaryCodeTypeOAuthStateApple
+	var checkTemporaryCode modelController.ReturnCheckTemporaryCode
 	checkTemporaryCode, err := controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
 		CodeUUID: request.State,
-		Type:     modelDatabase.TemporaryCodeTypeOAuthStateApple,
+		Type:     checkType,
 	})
 	if err != nil {
 		logger.Error("[Handler][AppleCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, false))
 		return
 	}
-	if checkTemporaryCode.IsNotFound || checkTemporaryCode.IsExpired {
+	if checkTemporaryCode.IsNotFound {
+		checkType = modelDatabase.TemporaryCodeTypeAppOAuthStateApple
+		checkTemporaryCode, err = controllerInstance.CheckTemporaryCode(modelController.ParamCheckTemporaryCode{
+			CodeUUID: request.State,
+			Type:     checkType,
+		})
+		if err != nil {
+			logger.Error("[Handler][AppleCallbackHandler()]->Error CheckTemporaryCode()", logger.Field("error", err.Error()))
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, false))
+			return
+		}
+	}
+	if checkTemporaryCode.IsExpired {
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, false))
 		return
 	}
@@ -977,5 +1153,9 @@ func AppleCallbackHandler(c *gin.Context) {
 
 	databaseTx.Commit()
 
-	c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, true))
+	if checkType == modelDatabase.TemporaryCodeTypeAppOAuthStateApple {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateAppOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, true))
+	} else {
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, true))
+	}
 }

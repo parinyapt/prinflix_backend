@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	ProviderLine = "Line"
+	ProviderLine   = "Line"
 	ProviderGoogle = "Google"
-	ProviderApple = "Apple"
+	ProviderApple  = "Apple"
 )
 
 func GenerateOAuthConnectRedirectUrl(platform string, success bool) (returnPath string) {
@@ -18,6 +18,19 @@ func GenerateOAuthConnectRedirectUrl(platform string, success bool) (returnPath 
 		returnPath += utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthSuccessPagePath)
 	} else {
 		returnPath += utilsConfigFile.GetRedirectPagePath(utilsConfigFile.ConnectOAuthFailPagePath)
+	}
+
+	returnPath = strings.Replace(returnPath, ":provider", platform, -1)
+
+	return returnPath
+}
+
+func GenerateAppOAuthConnectRedirectUrl(platform string, success bool) (returnPath string) {
+	returnPath = utilsConfigFile.GetAppBaseURL()
+	if success {
+		returnPath += utilsConfigFile.GetRedirectPagePath(utilsConfigFile.AppConnectOAuthSuccessPagePath)
+	} else {
+		returnPath += utilsConfigFile.GetRedirectPagePath(utilsConfigFile.AppConnectOAuthFailPagePath)
 	}
 
 	returnPath = strings.Replace(returnPath, ":provider", platform, -1)

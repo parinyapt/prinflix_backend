@@ -1,5 +1,9 @@
 package modelHandler
 
+type QueryParamOAuthConnect struct {
+	IsApplication bool `form:"isApplication" validate:"boolean"`
+}
+
 type ResponseRequestConnectOAuth struct {
 	AuthURL string `json:"auth_url"`
 }
