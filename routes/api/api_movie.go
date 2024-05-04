@@ -37,5 +37,10 @@ func InitMovieAPIv2(router *gin.RouterGroup) {
 		user.GET("/:movie_uuid/comment", handler.GetMovieCommentHandler)
 		user.POST("/:movie_uuid/comment", handler.AddMovieCommentHandler)
 		user.DELETE("/:movie_uuid/comment/:comment_uuid", handler.DeleteMovieCommentHandler)
+		watchSessionProtect := user.Use(middleware.WatchSessionCheckV2)
+		{
+			watchSessionProtect.POST("/watch/pause", handler.RequestPauseMovieHandler)
+			watchSessionProtect.POST("/watch/end", handler.RequestEndMovieHandler)
+		}
 	}
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/base64"
 	"net/http"
 	"strings"
 
@@ -134,7 +135,7 @@ func WatchSessionCheck(c *gin.Context) {
 	}
 	tokenData, err := controller.ValidateWatchSessionToken(sessionToken)
 	if err != nil {
-		logger.Error("[Handler][RequestEndMovieHandler()]->Error ValidateWatchSessionToken()", logger.Field("error", err.Error()))
+		logger.Error("[Middleware][WatchSessionCheck()]->Error ValidateWatchSessionToken()", logger.Field("error", err.Error()))
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 			ErrorCode:    "WSCMW02",
@@ -168,6 +169,130 @@ func WatchSessionCheck(c *gin.Context) {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 			ErrorCode:    "WSCMW04",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+
+	c.Set("WATCHSESSION_MOVIE_UUID", checkWatchSession.MovieUUID.String())
+	c.Next()
+}
+
+type QueryParamWatchSessionCheckV2 struct {
+	WatchSessionToken string `form:"session" validate:"required,base64url"`
+}
+
+type JWTCheckWatchSessionCheckV2 struct {
+	WatchSessionToken string `json:"session" validate:"required,jwt"`
+}
+
+func WatchSessionCheckV2(c *gin.Context) {
+	var queryParam QueryParamWatchSessionCheckV2
+
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV201",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+
+	isValidatePass, _, validatorError := PTGUvalidator.Validate(queryParam)
+	if validatorError != nil {
+		logger.Error("[Middleware][WatchSessionCheckV2()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV202",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV203",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+
+	watchSessionToken, err := base64.URLEncoding.DecodeString(queryParam.WatchSessionToken)
+	if err != nil {
+		logger.Error("[Middleware][WatchSessionCheckV2()]->Error Decode Base64", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV206",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+
+	var jwtCheck JWTCheckWatchSessionCheckV2
+	jwtCheck.WatchSessionToken = string(watchSessionToken)
+
+	isValidatePass, _, validatorError = PTGUvalidator.Validate(jwtCheck)
+	if validatorError != nil {
+		logger.Error("[Middleware][AuthWithAccessToken()]->Error Validate Data", logger.Field("error", validatorError.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV204",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+	if !isValidatePass {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV205",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+
+	tokenData, err := controller.ValidateWatchSessionToken(jwtCheck.WatchSessionToken)
+	if err != nil {
+		logger.Error("[Middleware][WatchSessionCheckV2()]->Error ValidateWatchSessionToken()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV207",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+	if tokenData.IsExpired {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV208",
+			Error:        "Invalid Session",
+		})
+		c.Abort()
+		return
+	}
+
+	controllerInstance := controller.NewController(database.DB)
+
+	checkWatchSession, err := controllerInstance.CheckWatchSession(tokenData.SessionUUID)
+	if err != nil {
+		logger.Error("[Handler][RequestEndMovieHandler()]->Error CheckWatchSession()", logger.Field("error", err.Error()))
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusInternalServerError,
+		})
+		c.Abort()
+		return
+	}
+	if checkWatchSession.IsNotFound {
+		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
+			ResponseCode: http.StatusBadRequest,
+			ErrorCode:    "WSCMWV207",
 			Error:        "Invalid Session",
 		})
 		c.Abort()

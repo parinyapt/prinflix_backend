@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,7 @@ import (
 
 func RequestWatchMovieHandler(c *gin.Context) {
 	var uriParam modelHandler.UriParamMovieUUIDonly
+	var response modelHandler.ResponseRequestWatchMovie
 
 	if err := c.ShouldBindUri(&uriParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
@@ -125,9 +127,10 @@ func RequestWatchMovieHandler(c *gin.Context) {
 
 	cookieMaxAge := int(controller.WatchSessionExpiredIn.Seconds())
 	c.SetCookie("prinflix_session_token", generateWatchSessionToken.WatchSessionToken, cookieMaxAge, "/", "prinpt.com", true, true)
+	response.WatchSessionToken = base64.URLEncoding.EncodeToString([]byte(generateWatchSessionToken.WatchSessionToken))
 	utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 		ResponseCode: http.StatusOK,
-		Data:         "Create Watch Session Success",
+		Data:         response,
 	})
 }
 

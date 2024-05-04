@@ -18,6 +18,10 @@ func configApiRoutes(router *gin.Engine) {
 		{
 			APIroutes.InitStorageAPI(v1)
 		}
+		v2 := storage.Group("/v2")
+		{
+			APIroutes.InitStorageAPIv2(v2)
+		}
 	}
 
 	v1 := router.Group("/v1")
