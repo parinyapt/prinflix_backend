@@ -14,6 +14,10 @@ import (
 func (receiver ControllerReceiverArgument) CreateAccount(param modelController.ParamCreateAccount) (returnData modelController.ReturnCreateAccount, err error) {
 	repoInstance := repository.NewRepository(receiver.databaseTX)
 
+	if len(param.Email) <= 1 {
+		return returnData, errors.New("[Controller][CreateAccount()]->Email is empty")
+	}
+
 	repoData, repoErr := repoInstance.FetchOneAccountByEmail(param.Email)
 	if repoErr != nil {
 		return returnData, errors.Wrap(repoErr, "[Controller][CreateAccount()]->Fail to fetch one account by email")
