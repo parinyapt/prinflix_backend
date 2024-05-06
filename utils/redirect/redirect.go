@@ -28,9 +28,9 @@ func GenerateOAuthConnectRedirectUrl(platform string, success bool) (returnPath 
 func GenerateAppOAuthConnectRedirectUrl(platform string, success bool) (returnPath string) {
 	returnPath = utilsConfigFile.GetAppBaseURL()
 	if success {
-		returnPath += utilsConfigFile.GetRedirectPagePath(utilsConfigFile.AppConnectOAuthSuccessPagePath)
+		returnPath += utilsConfigFile.GetAppRedirectPath(utilsConfigFile.AppConnectOAuthSuccessPagePath)
 	} else {
-		returnPath += utilsConfigFile.GetRedirectPagePath(utilsConfigFile.AppConnectOAuthFailPagePath)
+		returnPath += utilsConfigFile.GetAppRedirectPath(utilsConfigFile.AppConnectOAuthFailPagePath)
 	}
 
 	returnPath = strings.Replace(returnPath, ":provider", platform, -1)
