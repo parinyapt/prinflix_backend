@@ -44,7 +44,7 @@ func GetMovieCommentHandler(c *gin.Context) {
 
 	var queryParam modelHandler.QueryParamPagination
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 		})

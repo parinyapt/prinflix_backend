@@ -18,7 +18,7 @@ import (
 func GetMovieListHandler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamGetMovieList
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 		})

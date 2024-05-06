@@ -24,7 +24,7 @@ import (
 func RequestConnectGoogleOAuthHandler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthConnect
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 		})
@@ -158,7 +158,7 @@ func RequestDisconnectGoogleOAuthHandler(c *gin.Context) {
 func GoogleCallbackHandler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthCallback
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -250,7 +250,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 func RequestConnectLineOAuthHandler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthConnect
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 		})
@@ -384,7 +384,7 @@ func RequestDisconnectLineOAuthHandler(c *gin.Context) {
 func LineCallbackHandler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthCallback
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -497,7 +497,7 @@ func GoogleLoginV2Handler(c *gin.Context) {
 func GoogleLoginCallbackV2Handler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthCallback
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -642,7 +642,7 @@ func LineLoginV2Handler(c *gin.Context) {
 func LineLoginCallbackV2Handler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthCallback
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
@@ -925,7 +925,7 @@ func AppleLoginCallbackV2Handler(c *gin.Context) {
 func RequestConnectAppleOAuthHandler(c *gin.Context) {
 	var queryParam modelHandler.QueryParamOAuthConnect
 
-	if err := c.ShouldBind(&queryParam); err != nil {
+	if err := c.ShouldBindQuery(&queryParam); err != nil {
 		utilsResponse.ApiResponse(c, modelUtils.ApiResponseStruct{
 			ResponseCode: http.StatusBadRequest,
 		})
