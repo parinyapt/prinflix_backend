@@ -238,6 +238,7 @@ func GoogleCallbackHandler(c *gin.Context) {
 		} else {
 			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
 		}
+		return
 	}
 
 	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
@@ -481,6 +482,7 @@ func LineCallbackHandler(c *gin.Context) {
 		} else {
 			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
 		}
+		return
 	}
 
 	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
@@ -1186,6 +1188,7 @@ func AppleCallbackHandler(c *gin.Context) {
 		} else {
 			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, false))
 		}
+		return
 	}
 
 	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
