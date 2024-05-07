@@ -223,6 +223,23 @@ func GoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderGoogle, modelController.ParamCheckAccountOAuth{
+		UserID: getGoogleOAuthUserInfo.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][GoogleCallbackHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderGoogle, false, ""))
+		return
+	}
+
+	if !checkAccountOAuth.IsNotFound {
+		if checkType == modelDatabase.TemporaryCodeTypeAppOAuthStateGoogle {
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateAppOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
+		} else {
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderGoogle, false))
+		}
+	}
+
 	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
 		AccountUUID: checkTemporaryCode.AccountUUID.String(),
 		Provider:    modelDatabase.AccountOAuthProviderGoogle,
@@ -447,6 +464,23 @@ func LineCallbackHandler(c *gin.Context) {
 		logger.Error("[Handler][LineCallbackHandler()]->Error GetLineOAuthUserInfo()", logger.Field("error", err.Error()))
 		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
 		return
+	}
+
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderLine, modelController.ParamCheckAccountOAuth{
+		UserID: getLineOAuthUserInfo.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][LineCallbackHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderLine, false, ""))
+		return
+	}
+
+	if !checkAccountOAuth.IsNotFound {
+		if checkType == modelDatabase.TemporaryCodeTypeAppOAuthStateLine {
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateAppOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		} else {
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderLine, false))
+		}
 	}
 
 	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
@@ -1135,6 +1169,23 @@ func AppleCallbackHandler(c *gin.Context) {
 	appleOAuthUserInfo.Name = userData.Name.FirstName + " " + userData.Name.LastName
 	if appleOAuthUserInfo.Name == " " {
 		appleOAuthUserInfo.Name = "User " + appleOAuthUserInfo.Email
+	}
+
+	checkAccountOAuth, err := controllerInstance.CheckAccountOAuth(modelDatabase.AccountOAuthProviderApple, modelController.ParamCheckAccountOAuth{
+		UserID: appleOAuthUserInfo.UserID,
+	})
+	if err != nil {
+		logger.Error("[Handler][AppleCallbackHandler()]->Error CheckAccountOAuth()", logger.Field("error", err.Error()))
+		c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthLoginRedirectUrl(utilsRedirect.ProviderApple, false, ""))
+		return
+	}
+
+	if !checkAccountOAuth.IsNotFound {
+		if checkType == modelDatabase.TemporaryCodeTypeAppOAuthStateApple {
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateAppOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, false))
+		} else {
+			c.Redirect(http.StatusFound, utilsRedirect.GenerateOAuthConnectRedirectUrl(utilsRedirect.ProviderApple, false))
+		}
 	}
 
 	err = controllerInstance.CreateAccountOAuth(modelController.ParamCreateAccountOAuth{
